@@ -28,7 +28,7 @@ func (q Keeper) LatestWASMCode(c context.Context, query *types.LatestWASMCodeQue
 	store := ctx.KVStore(q.storeKey)
 
 	latestCodeKey := host.LatestWASMCode(clientType)
-	latestCodeId := store.Get([]byte(latestCodeKey))
+	latestCodeId := store.Get(latestCodeKey)
 	if latestCodeId == nil {
 		return nil, status.Error(codes.NotFound, "no code has been uploaded till now.")
 	}
@@ -52,9 +52,9 @@ func (q Keeper) LatestWASMCodeEntry(c context.Context, query *types.LatestWASMCo
 	ctx := sdk.UnwrapSDKContext(c)
 	store := ctx.KVStore(q.storeKey)
 	latestCodeKey := host.LatestWASMCode(clientType)
-	latestCodeId := store.Get([]byte(latestCodeKey))
+	latestCodeId := store.Get(latestCodeKey)
 
-	bz := store.Get([]byte(host.WASMCodeEntry(clientType, string(latestCodeId))))
+	bz := store.Get(host.WASMCodeEntry(clientType, string(latestCodeId)))
 	var entry types.WasmCodeEntry
 	if err := q.cdc.UnmarshalBinaryBare(bz, &entry); err != nil {
 		return nil, status.Error(codes.Internal, "internal error")

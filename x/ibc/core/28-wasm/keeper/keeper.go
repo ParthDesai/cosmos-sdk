@@ -66,19 +66,29 @@ func (k Keeper) PushNewWASMCode(ctx sdk.Context, clientType string, code []byte)
 		return "", fmt.Errorf("invalid wasm code")
 	}
 
-	latestVersionCodeId := store.Get([]byte(latestVersionKey))
+	latestVersionCodeId := store.Get(latestVersionKey)
 
 	// TODO: More careful management of doubly linked list can lift this constraint
-	if store.Has([]byte(entryKey)) {
+	if store.Has(entryKey) {
 		return "", fmt.Errorf("wasm code already exists")
 	} else {
 		codeEntry := types.WasmCodeEntry{
 			PreviousCodeId: string(latestVersionCodeId),
 			NextCodeId: "",
 		}
-		store.Set([]byte(entryKey), k.cdc.MustMarshalBinaryBare(&codeEntry))
-		store.Set([]byte(latestVersionKey), []byte(codeId))
-		store.Set([]byte(codekey), code)
+
+		previousVersionEntryKey := host.WASMCodeEntry(clientType, string(latestVersionCodeId))
+		previousVersionEntryBz := store.Get(previousVersionEntryKey)
+		if len(previousVersionEntryBz) != 0 {
+			var previousEntry types.WasmCodeEntry
+			k.cdc.MustUnmarshalBinaryBare(previousVersionEntryBz, &previousEntry)
+			previousEntry.NextCodeId = codeId
+			store.Set(previousVersionEntryKey, k.cdc.MustMarshalBinaryBare(&previousEntry))
+		}
+
+		store.Set(entryKey, k.cdc.MustMarshalBinaryBare(&codeEntry))
+		store.Set(latestVersionKey, []byte(codeId))
+		store.Set(codekey, code)
 	}
 	return codeId, nil
 }

@@ -33,8 +33,6 @@ func GetCmdQueryLatestWASMCode() *cobra.Command {
 				ClientType: clientType,
 			}
 
-			// TODO: Validate basic
-
 			res, err := queryClient.LatestWASMCode(context.Background(), &req)
 			if err != nil {
 				return err

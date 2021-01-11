@@ -234,14 +234,14 @@ func PortPath(portID string) string {
 	return fmt.Sprintf("%s/%s", KeyPortPrefix, portID)
 }
 
-func LatestWASMCode(clientType string) string {
-	return fmt.Sprintf("%s/latest", clientType)
+func LatestWASMCode(clientType string) []byte {
+	return []byte(fmt.Sprintf("%s/latest", clientType))
 }
 
-func WASMCode(clientType string, hash string) string {
-	return fmt.Sprintf("%s/%s", clientType, hash)
+func WASMCode(clientType string, hash string) []byte {
+	return []byte(fmt.Sprintf("%s/%s", clientType, hash))
 }
 
-func WASMCodeEntry(clientType string, codeID string) string {
-	return fmt.Sprintf("%s/%s/entry", clientType, codeID)
+func WASMCodeEntry(clientType string, codeID string) []byte {
+	return []byte(fmt.Sprintf("%s/%s/entry", clientType, codeID))
 }
