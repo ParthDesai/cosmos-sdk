@@ -34,7 +34,7 @@ func (q Keeper) LatestWASMCode(c context.Context, query *types.LatestWASMCodeQue
 	}
 
 	return &types.LatestWASMCodeResponse{
-		Code: store.Get([]byte(host.WASMCode(clientType, string(latestCodeId)))),
+		Code: store.Get(host.WASMCode(clientType, string(latestCodeId))),
 	}, nil
 }
 
@@ -53,6 +53,9 @@ func (q Keeper) LatestWASMCodeEntry(c context.Context, query *types.LatestWASMCo
 	store := ctx.KVStore(q.storeKey)
 	latestCodeKey := host.LatestWASMCode(clientType)
 	latestCodeId := store.Get(latestCodeKey)
+	if latestCodeId == nil {
+		return nil, status.Error(codes.NotFound, "no code has been uploaded till now.")
+	}
 
 	bz := store.Get(host.WASMCodeEntry(clientType, string(latestCodeId)))
 	var entry types.WasmCodeEntry

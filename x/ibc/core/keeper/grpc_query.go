@@ -6,6 +6,7 @@ import (
 	clienttypes "github.com/cosmos/cosmos-sdk/x/ibc/core/02-client/types"
 	connectiontypes "github.com/cosmos/cosmos-sdk/x/ibc/core/03-connection/types"
 	channeltypes "github.com/cosmos/cosmos-sdk/x/ibc/core/04-channel/types"
+	wasmtypes "github.com/cosmos/cosmos-sdk/x/ibc/core/28-wasm/types"
 )
 
 // ClientState implements the IBC QueryServer interface
@@ -121,4 +122,12 @@ func (q Keeper) UnreceivedAcks(c context.Context, req *channeltypes.QueryUnrecei
 // NextSequenceReceive implements the IBC QueryServer interface
 func (q Keeper) NextSequenceReceive(c context.Context, req *channeltypes.QueryNextSequenceReceiveRequest) (*channeltypes.QueryNextSequenceReceiveResponse, error) {
 	return q.ChannelKeeper.NextSequenceReceive(c, req)
+}
+
+func (q Keeper) LatestWASMCode(c context.Context, req *wasmtypes.LatestWASMCodeQuery) (*wasmtypes.LatestWASMCodeResponse, error) {
+	return q.WasmKeeper.LatestWASMCode(c, req)
+}
+
+func (q Keeper) LatestWASMCodeEntry(c context.Context, req *wasmtypes.LatestWASMCodeEntryQuery) (*wasmtypes.LatestWASMCodeEntryResponse, error) {
+	return q.WasmKeeper.LatestWASMCodeEntry(c, req)
 }
