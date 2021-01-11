@@ -6,6 +6,7 @@ import (
 	connectiontypes "github.com/cosmos/cosmos-sdk/x/ibc/core/03-connection/types"
 	channeltypes "github.com/cosmos/cosmos-sdk/x/ibc/core/04-channel/types"
 	commitmenttypes "github.com/cosmos/cosmos-sdk/x/ibc/core/23-commitment/types"
+	wasmtypes "github.com/cosmos/cosmos-sdk/x/ibc/core/28-wasm/types"
 	solomachinetypes "github.com/cosmos/cosmos-sdk/x/ibc/light-clients/06-solomachine/types"
 	ibctmtypes "github.com/cosmos/cosmos-sdk/x/ibc/light-clients/07-tendermint/types"
 	localhosttypes "github.com/cosmos/cosmos-sdk/x/ibc/light-clients/09-localhost/types"
@@ -20,4 +21,5 @@ func RegisterInterfaces(registry codectypes.InterfaceRegistry) {
 	ibctmtypes.RegisterInterfaces(registry)
 	localhosttypes.RegisterInterfaces(registry)
 	commitmenttypes.RegisterInterfaces(registry)
+	wasmtypes.RegisterInterfaces(registry)
 }
