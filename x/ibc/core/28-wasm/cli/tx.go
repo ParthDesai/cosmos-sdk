@@ -21,10 +21,10 @@ func NewPushNewWASMCodeCmd() *cobra.Command {
 				return err
 			}
 
-			filename := args[0]
-			clientType := args[1]
+			clientType := args[0]
+			fileName := args[1]
 
-			code, err := ioutil.ReadFile(filename)
+			code, err := ioutil.ReadFile(fileName)
 			if err != nil {
 				return err
 			}
