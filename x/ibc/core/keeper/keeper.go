@@ -10,6 +10,7 @@ import (
 	channelkeeper "github.com/cosmos/cosmos-sdk/x/ibc/core/04-channel/keeper"
 	portkeeper "github.com/cosmos/cosmos-sdk/x/ibc/core/05-port/keeper"
 	porttypes "github.com/cosmos/cosmos-sdk/x/ibc/core/05-port/types"
+	wasmkeeper "github.com/cosmos/cosmos-sdk/x/ibc/core/28-wasm/keeper"
 	"github.com/cosmos/cosmos-sdk/x/ibc/core/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 )
@@ -27,6 +28,7 @@ type Keeper struct {
 	ConnectionKeeper connectionkeeper.Keeper
 	ChannelKeeper    channelkeeper.Keeper
 	PortKeeper       portkeeper.Keeper
+	WasmKeeper 		 wasmkeeper.Keeper
 	Router           *porttypes.Router
 }
 
@@ -39,6 +41,9 @@ func NewKeeper(
 	connectionKeeper := connectionkeeper.NewKeeper(cdc, key, clientKeeper)
 	portKeeper := portkeeper.NewKeeper(scopedKeeper)
 	channelKeeper := channelkeeper.NewKeeper(cdc, key, clientKeeper, connectionKeeper, portKeeper, scopedKeeper)
+	wasmKeeper := wasmkeeper.NewKeeper(cdc, key, &wasmkeeper.WASMValidationConfig{
+		MaxSizeAllowed: 1024*1024,
+	})
 
 	return &Keeper{
 		cdc:              cdc,
@@ -46,6 +51,7 @@ func NewKeeper(
 		ConnectionKeeper: connectionKeeper,
 		ChannelKeeper:    channelKeeper,
 		PortKeeper:       portKeeper,
+		WasmKeeper: wasmKeeper,
 	}
 }
 

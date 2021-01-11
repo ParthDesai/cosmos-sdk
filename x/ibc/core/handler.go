@@ -6,6 +6,7 @@ import (
 	clienttypes "github.com/cosmos/cosmos-sdk/x/ibc/core/02-client/types"
 	connectiontypes "github.com/cosmos/cosmos-sdk/x/ibc/core/03-connection/types"
 	channeltypes "github.com/cosmos/cosmos-sdk/x/ibc/core/04-channel/types"
+	wasmtypes "github.com/cosmos/cosmos-sdk/x/ibc/core/28-wasm/types"
 	"github.com/cosmos/cosmos-sdk/x/ibc/core/keeper"
 )
 
@@ -89,6 +90,10 @@ func NewHandler(k keeper.Keeper) sdk.Handler {
 
 		case *channeltypes.MsgTimeoutOnClose:
 			res, err := k.TimeoutOnClose(sdk.WrapSDKContext(ctx), msg)
+			return sdk.WrapServiceResult(ctx, res, err)
+
+		case *wasmtypes.MsgPushNewWASMCode:
+			res, err := k.PushNewWASMCode(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
 
 		default:

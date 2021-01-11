@@ -1,0 +1,22 @@
+syntax = "proto3";
+package ibc.core.wasm.v1;
+
+option go_package = "github.com/cosmos/cosmos-sdk/x/ibc/core/28-wasm/types";
+
+// Msg defines the ibc/wasm Msg service.
+service Msg {
+  // PushNewWASMCode defines a rpc handler method for PushNewWASMCode.
+  rpc PushNewWASMCode(MsgPushNewWASMCode) returns (MsgPushNewWASMCodeResponse);
+}
+
+// Message type to push new wasm code
+message MsgPushNewWASMCode {
+  string client_type = 1;
+  bytes  code        = 2;
+  string signer      = 3;
+}
+
+// Response in case of successful handling
+message MsgPushNewWASMCodeResponse {
+  string code_id = 1;
+}

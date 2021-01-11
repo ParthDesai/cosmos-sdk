@@ -1,0 +1,18 @@
+package wasm
+
+import (
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/cosmos/cosmos-sdk/x/ibc/core/28-wasm/keeper"
+	"github.com/cosmos/cosmos-sdk/x/ibc/core/28-wasm/types"
+)
+
+func HandleMsgPushNewWASMCode(ctx sdk.Context, k keeper.Keeper, msg *types.MsgPushNewWASMCode) (*sdk.Result, error) {
+	if codeId, err := k.PushNewWASMCode(ctx, msg.ClientType, msg.Code); err != nil {
+		return nil, sdkerrors.Wrap(err, "pushing new wasm code failed")
+	} else {
+		return &sdk.Result{
+			Data: []byte(codeId),
+		}, nil
+	}
+}

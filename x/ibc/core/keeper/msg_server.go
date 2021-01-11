@@ -13,11 +13,25 @@ import (
 	channel "github.com/cosmos/cosmos-sdk/x/ibc/core/04-channel"
 	channeltypes "github.com/cosmos/cosmos-sdk/x/ibc/core/04-channel/types"
 	porttypes "github.com/cosmos/cosmos-sdk/x/ibc/core/05-port/types"
+	wasm "github.com/cosmos/cosmos-sdk/x/ibc/core/28-wasm"
+	wasmtypes "github.com/cosmos/cosmos-sdk/x/ibc/core/28-wasm/types"
 )
 
 var _ clienttypes.MsgServer = Keeper{}
 var _ connectiontypes.MsgServer = Keeper{}
 var _ channeltypes.MsgServer = Keeper{}
+var _ wasmtypes.MsgServer = Keeper{}
+
+func (k Keeper) PushNewWASMCode(goCtx context.Context, msg *wasmtypes.MsgPushNewWASMCode) (*wasmtypes.MsgPushNewWASMCodeResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	if resp, err := wasm.HandleMsgPushNewWASMCode(ctx, k.WasmKeeper, msg); err != nil {
+		return nil, err
+	} else {
+		return &wasmtypes.MsgPushNewWASMCodeResponse{
+			CodeId: string(resp.Data),
+		}, nil
+	}
+}
 
 // CreateClient defines a rpc handler method for MsgCreateClient.
 func (k Keeper) CreateClient(goCtx context.Context, msg *clienttypes.MsgCreateClient) (*clienttypes.MsgCreateClientResponse, error) {

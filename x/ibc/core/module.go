@@ -23,6 +23,7 @@ import (
 	connectiontypes "github.com/cosmos/cosmos-sdk/x/ibc/core/03-connection/types"
 	channeltypes "github.com/cosmos/cosmos-sdk/x/ibc/core/04-channel/types"
 	host "github.com/cosmos/cosmos-sdk/x/ibc/core/24-host"
+	wasmtypes "github.com/cosmos/cosmos-sdk/x/ibc/core/28-wasm/types"
 	"github.com/cosmos/cosmos-sdk/x/ibc/core/client/cli"
 	"github.com/cosmos/cosmos-sdk/x/ibc/core/keeper"
 	"github.com/cosmos/cosmos-sdk/x/ibc/core/simulation"
@@ -72,6 +73,7 @@ func (AppModuleBasic) RegisterGRPCGatewayRoutes(clientCtx client.Context, mux *r
 	clienttypes.RegisterQueryHandlerClient(context.Background(), mux, clienttypes.NewQueryClient(clientCtx))
 	connectiontypes.RegisterQueryHandlerClient(context.Background(), mux, connectiontypes.NewQueryClient(clientCtx))
 	channeltypes.RegisterQueryHandlerClient(context.Background(), mux, channeltypes.NewQueryClient(clientCtx))
+	wasmtypes.RegisterQueryHandlerClient(context.Background(), mux, wasmtypes.NewQueryClient(clientCtx))
 }
 
 // GetTxCmd returns the root tx command for the ibc module.
@@ -135,6 +137,7 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 	clienttypes.RegisterMsgServer(cfg.MsgServer(), am.keeper)
 	connectiontypes.RegisterMsgServer(cfg.MsgServer(), am.keeper)
 	channeltypes.RegisterMsgServer(cfg.MsgServer(), am.keeper)
+	wasmtypes.RegisterMsgServer(cfg.MsgServer(), am.keeper)
 	types.RegisterQueryService(cfg.QueryServer(), am.keeper)
 }
 

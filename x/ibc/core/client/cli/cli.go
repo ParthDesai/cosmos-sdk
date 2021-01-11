@@ -8,6 +8,7 @@ import (
 	connection "github.com/cosmos/cosmos-sdk/x/ibc/core/03-connection"
 	channel "github.com/cosmos/cosmos-sdk/x/ibc/core/04-channel"
 	host "github.com/cosmos/cosmos-sdk/x/ibc/core/24-host"
+	wasm "github.com/cosmos/cosmos-sdk/x/ibc/core/28-wasm"
 	solomachine "github.com/cosmos/cosmos-sdk/x/ibc/light-clients/06-solomachine"
 	tendermint "github.com/cosmos/cosmos-sdk/x/ibc/light-clients/07-tendermint"
 )
@@ -27,6 +28,7 @@ func GetTxCmd() *cobra.Command {
 		tendermint.GetTxCmd(),
 		connection.GetTxCmd(),
 		channel.GetTxCmd(),
+		wasm.GetTxCmd(),
 	)
 
 	return ibcTxCmd
@@ -47,6 +49,7 @@ func GetQueryCmd() *cobra.Command {
 		ibcclient.GetQueryCmd(),
 		connection.GetQueryCmd(),
 		channel.GetQueryCmd(),
+		wasm.GetQueryCmd(),
 	)
 
 	return ibcQueryCmd
