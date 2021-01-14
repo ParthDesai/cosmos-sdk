@@ -64,6 +64,7 @@ func (q Keeper) LatestWASMCodeEntry(c context.Context, query *types.LatestWASMCo
 	}
 
 	return &types.LatestWASMCodeEntryResponse{
+		CodeId: string(latestCodeId),
 		Entry: &entry,
 	}, nil
 }

@@ -29,19 +29,14 @@ type Keeper struct {
 
 func NewKeeper(cdc codec.BinaryMarshaler, key sdk.StoreKey, validationConfig *WASMValidationConfig) Keeper {
 	// TODO: Make this configurable
-	vm, err := wasm.NewVM("wasm_data", "", 1024*1024, true, 1024*1024)
+	vm, err := wasm.NewVM("wasm_data", "staking", 8, true, 8)
 	if err != nil {
 		panic(err)
 	}
 
-	// testingVm is used to test incoming wasm blobs, cache is reset after every validation
-	// this is required because currently wasm vm does not support removing specific wasm code from cache
-	testingVm, err := wasm.NewVM("wasm_test_data", "", 1024*1024, true, 1024*1024)
-	if err != nil {
-		panic(err)
-	}
-
-	wasmValidator, err := NewWASMValidator(validationConfig, testingVm)
+	wasmValidator, err := NewWASMValidator(validationConfig, func () (*wasm.VM, error) {
+		return wasm.NewVM("wasm_test_data", "staking", 8, true, 8)
+	})
 	if err != nil {
 		panic(err)
 	}
@@ -62,13 +57,18 @@ func (k Keeper) PushNewWASMCode(ctx sdk.Context, clientType string, code []byte)
 	codekey := host.WASMCode(clientType, codeId)
 	entryKey := host.WASMCodeEntry(clientType, codeId)
 
-	if !k.wasmValidator.validateWASMCode(code) {
-		return "", fmt.Errorf("invalid wasm code")
+	if isValidWASMCode, err := k.wasmValidator.validateWASMCode(code); err != nil {
+		return "", fmt.Errorf("unable to validate wasm code, error: %s", err)
+	} else {
+		if !isValidWASMCode {
+			return "", fmt.Errorf("invalid wasm code")
+		}
 	}
 
 	latestVersionCodeId := store.Get(latestVersionKey)
 
-	// TODO: More careful management of doubly linked list can lift this constraint
+	// More careful management of doubly linked list can lift this constraint
+	// But we do not see any significant advantage of it.
 	if store.Has(entryKey) {
 		return "", fmt.Errorf("wasm code already exists")
 	} else {

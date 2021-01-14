@@ -23,7 +23,8 @@ message LatestWASMCodeEntryQuery {
 
 // Latest wasm code entry response
 message LatestWASMCodeEntryResponse {
-  ibc.core.wasm.v1.WasmCodeEntry entry = 1;
+  string                         code_id = 1;
+  ibc.core.wasm.v1.WasmCodeEntry entry   = 2;
 }
 
 // Query service for wasm module
