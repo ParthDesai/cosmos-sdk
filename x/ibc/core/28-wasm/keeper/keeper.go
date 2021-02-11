@@ -10,11 +10,14 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/x/ibc/core/28-wasm/types"
 
-    "crypto/sha256"
+	"crypto/sha256"
 	"encoding/hex"
 )
 
-func generateWASMCodeID(code []byte) string {
+// WASM VM initialized by wasm keeper
+var WasmVM *wasm.VM
+
+func generateWASMCodeHash(code []byte) string {
 	hash := sha256.Sum256(code)
 	return hex.EncodeToString(hash[:])
 }
@@ -23,7 +26,6 @@ func generateWASMCodeID(code []byte) string {
 type Keeper struct {
 	storeKey sdk.StoreKey
 	cdc      codec.BinaryMarshaler
-	wasmer *wasm.VM
 	wasmValidator *WASMValidator
 }
 
@@ -41,55 +43,64 @@ func NewKeeper(cdc codec.BinaryMarshaler, key sdk.StoreKey, validationConfig *WA
 		panic(err)
 	}
 
+	WasmVM = vm
+
 	return Keeper{
-		wasmer: vm,
 		cdc: cdc,
 		storeKey: key,
 		wasmValidator: wasmValidator,
 	}
 }
 
-func (k Keeper) PushNewWASMCode(ctx sdk.Context, clientType string, code []byte) (string, error) {
+func (k Keeper) PushNewWASMCode(ctx sdk.Context, clientType string, code []byte) ([]byte, string, error) {
 	store := ctx.KVStore(k.storeKey)
-	codeId := generateWASMCodeID(code)
+	codeHash := generateWASMCodeHash(code)
 
 	latestVersionKey := host.LatestWASMCode(clientType)
-	codekey := host.WASMCode(clientType, codeId)
-	entryKey := host.WASMCodeEntry(clientType, codeId)
 
 	if isValidWASMCode, err := k.wasmValidator.validateWASMCode(code); err != nil {
-		return "", fmt.Errorf("unable to validate wasm code, error: %s", err)
+		return nil, "", fmt.Errorf("unable to validate wasm code, error: %s", err)
 	} else {
 		if !isValidWASMCode {
-			return "", fmt.Errorf("invalid wasm code")
+			return nil, "", fmt.Errorf("invalid wasm code")
 		}
 	}
 
-	latestVersionCodeId := store.Get(latestVersionKey)
+	codeId, err := WasmVM.Create(code)
+	if err != nil {
+		return nil, "", fmt.Errorf("invalid wasm code")
+	}
+
+	codekey := host.WASMCode(clientType, codeHash)
+	entryKey := host.WASMCodeEntry(clientType, codeHash)
+
+	latestVersionCodeHash := store.Get(latestVersionKey)
 
 	// More careful management of doubly linked list can lift this constraint
 	// But we do not see any significant advantage of it.
 	if store.Has(entryKey) {
-		return "", fmt.Errorf("wasm code already exists")
+		return nil, "", fmt.Errorf("wasm code already exists")
 	} else {
 		codeEntry := types.WasmCodeEntry{
-			PreviousCodeId: string(latestVersionCodeId),
-			NextCodeId: "",
+			PreviousCodeHash: string(latestVersionCodeHash),
+			NextCodeHash: "",
+			CodeId: codeId,
 		}
 
-		previousVersionEntryKey := host.WASMCodeEntry(clientType, string(latestVersionCodeId))
+		previousVersionEntryKey := host.WASMCodeEntry(clientType, string(latestVersionCodeHash))
 		previousVersionEntryBz := store.Get(previousVersionEntryKey)
 		if len(previousVersionEntryBz) != 0 {
 			var previousEntry types.WasmCodeEntry
 			k.cdc.MustUnmarshalBinaryBare(previousVersionEntryBz, &previousEntry)
-			previousEntry.NextCodeId = codeId
+			previousEntry.NextCodeHash = codeHash
 			store.Set(previousVersionEntryKey, k.cdc.MustMarshalBinaryBare(&previousEntry))
 		}
 
 		store.Set(entryKey, k.cdc.MustMarshalBinaryBare(&codeEntry))
-		store.Set(latestVersionKey, []byte(codeId))
+		store.Set(latestVersionKey, []byte(codeHash))
 		store.Set(codekey, code)
 	}
-	return codeId, nil
+
+	return codeId, codeHash, nil
 }
 

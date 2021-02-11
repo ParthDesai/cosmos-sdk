@@ -24,13 +24,7 @@ var _ wasmtypes.MsgServer = Keeper{}
 
 func (k Keeper) PushNewWASMCode(goCtx context.Context, msg *wasmtypes.MsgPushNewWASMCode) (*wasmtypes.MsgPushNewWASMCodeResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	if resp, err := wasm.HandleMsgPushNewWASMCode(ctx, k.WasmKeeper, msg); err != nil {
-		return nil, err
-	} else {
-		return &wasmtypes.MsgPushNewWASMCodeResponse{
-			CodeId: string(resp.Data),
-		}, nil
-	}
+	return wasm.HandleMsgPushNewWASMCode(ctx, k.WasmKeeper, msg)
 }
 
 // CreateClient defines a rpc handler method for MsgCreateClient.

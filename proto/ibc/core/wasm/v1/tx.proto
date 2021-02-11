@@ -1,6 +1,8 @@
 syntax = "proto3";
 package ibc.core.wasm.v1;
 
+import "gogoproto/gogo.proto";
+
 option go_package = "github.com/cosmos/cosmos-sdk/x/ibc/core/28-wasm/types";
 
 // Msg defines the ibc/wasm Msg service.
@@ -11,12 +13,13 @@ service Msg {
 
 // Message type to push new wasm code
 message MsgPushNewWASMCode {
-  string client_type = 1;
-  bytes  code        = 2;
-  string signer      = 3;
+  string signer      = 1;
+  string client_type = 2;
+  bytes  code        = 3;
 }
 
 // Response in case of successful handling
 message MsgPushNewWASMCodeResponse {
-  string code_id = 1;
+  bytes  code_id   = 1;
+  string code_hash = 2;
 }

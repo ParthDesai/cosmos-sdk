@@ -1,0 +1,35 @@
+syntax = "proto3";
+package ibc.lightclients.wasm.v1;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/cosmos/cosmos-sdk/x/ibc/light-clients/10-wasm/types";
+
+// WASM light client's Client state
+message ClientState {
+  bytes  data        = 1;
+  bytes  code_id     = 2;
+  uint64 instance_id = 3;
+}
+
+// WASM light client's ConsensusState
+message ConsensusState {
+  bytes  data        = 1;
+  bytes  code_id     = 2;
+  uint64 instance_id = 3;
+}
+
+// WASM light client Header
+message Header {
+  bytes data    = 1;
+  bytes code_id = 2;
+}
+
+// WASM light client Misbehaviour
+message Misbehaviour {
+  bytes  code_id     = 1;
+  uint64 instance_id = 2;
+  string client_id   = 3 [(gogoproto.moretags) = "yaml:\"client_id\""];
+  Header header_1    = 4 [(gogoproto.customname) = "Header1", (gogoproto.moretags) = "yaml:\"header_1\""];
+  Header header_2    = 5 [(gogoproto.customname) = "Header2", (gogoproto.moretags) = "yaml:\"header_2\""];
+}

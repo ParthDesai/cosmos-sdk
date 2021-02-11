@@ -6,6 +6,7 @@ option go_package = "github.com/cosmos/cosmos-sdk/x/ibc/core/28-wasm/types";
 // WASM code entry that allows keeper to traverse
 // the doubly linked list
 message WasmCodeEntry {
-  string previous_code_id = 1;
-  string next_code_id     = 2;
+  bytes  code_id            = 1;
+  string previous_code_hash = 2;
+  string next_code_hash     = 3;
 }

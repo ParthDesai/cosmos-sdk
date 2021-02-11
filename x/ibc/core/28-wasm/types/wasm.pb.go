@@ -25,8 +25,9 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 // WASM code entry that allows keeper to traverse
 // the doubly linked list
 type WasmCodeEntry struct {
-	PreviousCodeId string `protobuf:"bytes,1,opt,name=previous_code_id,json=previousCodeId,proto3" json:"previous_code_id,omitempty"`
-	NextCodeId     string `protobuf:"bytes,2,opt,name=next_code_id,json=nextCodeId,proto3" json:"next_code_id,omitempty"`
+	CodeId           []byte `protobuf:"bytes,1,opt,name=code_id,json=codeId,proto3" json:"code_id,omitempty"`
+	PreviousCodeHash string `protobuf:"bytes,2,opt,name=previous_code_hash,json=previousCodeHash,proto3" json:"previous_code_hash,omitempty"`
+	NextCodeHash     string `protobuf:"bytes,3,opt,name=next_code_hash,json=nextCodeHash,proto3" json:"next_code_hash,omitempty"`
 }
 
 func (m *WasmCodeEntry) Reset()         { *m = WasmCodeEntry{} }
@@ -62,16 +63,23 @@ func (m *WasmCodeEntry) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_WasmCodeEntry proto.InternalMessageInfo
 
-func (m *WasmCodeEntry) GetPreviousCodeId() string {
+func (m *WasmCodeEntry) GetCodeId() []byte {
 	if m != nil {
-		return m.PreviousCodeId
+		return m.CodeId
+	}
+	return nil
+}
+
+func (m *WasmCodeEntry) GetPreviousCodeHash() string {
+	if m != nil {
+		return m.PreviousCodeHash
 	}
 	return ""
 }
 
-func (m *WasmCodeEntry) GetNextCodeId() string {
+func (m *WasmCodeEntry) GetNextCodeHash() string {
 	if m != nil {
-		return m.NextCodeId
+		return m.NextCodeHash
 	}
 	return ""
 }
@@ -83,20 +91,22 @@ func init() {
 func init() { proto.RegisterFile("ibc/core/wasm/v1/wasm.proto", fileDescriptor_8e445a743f39a2b3) }
 
 var fileDescriptor_8e445a743f39a2b3 = []byte{
-	// 204 bytes of a gzipped FileDescriptorProto
+	// 228 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0x92, 0xce, 0x4c, 0x4a, 0xd6,
 	0x4f, 0xce, 0x2f, 0x4a, 0xd5, 0x2f, 0x4f, 0x2c, 0xce, 0xd5, 0x2f, 0x33, 0x04, 0xd3, 0x7a, 0x05,
 	0x45, 0xf9, 0x25, 0xf9, 0x42, 0x02, 0x99, 0x49, 0xc9, 0x7a, 0x20, 0x49, 0x3d, 0xb0, 0x60, 0x99,
-	0xa1, 0x52, 0x34, 0x17, 0x6f, 0x78, 0x62, 0x71, 0xae, 0x73, 0x7e, 0x4a, 0xaa, 0x6b, 0x5e, 0x49,
-	0x51, 0xa5, 0x90, 0x06, 0x97, 0x40, 0x41, 0x51, 0x6a, 0x59, 0x66, 0x7e, 0x69, 0x71, 0x7c, 0x72,
-	0x7e, 0x4a, 0x6a, 0x7c, 0x66, 0x8a, 0x04, 0xa3, 0x02, 0xa3, 0x06, 0x67, 0x10, 0x1f, 0x4c, 0x1c,
-	0xa4, 0xd8, 0x33, 0x45, 0x48, 0x81, 0x8b, 0x27, 0x2f, 0xb5, 0xa2, 0x04, 0xae, 0x8a, 0x09, 0xac,
-	0x8a, 0x0b, 0x24, 0x06, 0x51, 0xe1, 0xe4, 0x7f, 0xe2, 0x91, 0x1c, 0xe3, 0x85, 0x47, 0x72, 0x8c,
-	0x0f, 0x1e, 0xc9, 0x31, 0x4e, 0x78, 0x2c, 0xc7, 0x70, 0xe1, 0xb1, 0x1c, 0xc3, 0x8d, 0xc7, 0x72,
-	0x0c, 0x51, 0xa6, 0xe9, 0x99, 0x25, 0x19, 0xa5, 0x49, 0x7a, 0xc9, 0xf9, 0xb9, 0xfa, 0xc9, 0xf9,
-	0xc5, 0xb9, 0xf9, 0xc5, 0x50, 0x4a, 0xb7, 0x38, 0x25, 0x5b, 0xbf, 0x42, 0x1f, 0xee, 0x09, 0x23,
-	0x0b, 0x5d, 0xb0, 0x3f, 0x4a, 0x2a, 0x0b, 0x52, 0x8b, 0x93, 0xd8, 0xc0, 0xde, 0x30, 0x06, 0x04,
-	0x00, 0x00, 0xff, 0xff, 0xa9, 0x7d, 0x2a, 0xd1, 0xe5, 0x00, 0x00, 0x00,
+	0xa1, 0x52, 0x0d, 0x17, 0x6f, 0x78, 0x62, 0x71, 0xae, 0x73, 0x7e, 0x4a, 0xaa, 0x6b, 0x5e, 0x49,
+	0x51, 0xa5, 0x90, 0x38, 0x17, 0x7b, 0x72, 0x7e, 0x4a, 0x6a, 0x7c, 0x66, 0x8a, 0x04, 0xa3, 0x02,
+	0xa3, 0x06, 0x4f, 0x10, 0x1b, 0x88, 0xeb, 0x99, 0x22, 0xa4, 0xc3, 0x25, 0x54, 0x50, 0x94, 0x5a,
+	0x96, 0x99, 0x5f, 0x5a, 0x1c, 0x0f, 0x56, 0x91, 0x91, 0x58, 0x9c, 0x21, 0xc1, 0xa4, 0xc0, 0xa8,
+	0xc1, 0x19, 0x24, 0x00, 0x93, 0x01, 0x99, 0xe3, 0x91, 0x58, 0x9c, 0x21, 0xa4, 0xc2, 0xc5, 0x97,
+	0x97, 0x5a, 0x51, 0x82, 0xa4, 0x92, 0x19, 0xac, 0x92, 0x07, 0x24, 0x0a, 0x53, 0xe5, 0xe4, 0x7f,
+	0xe2, 0x91, 0x1c, 0xe3, 0x85, 0x47, 0x72, 0x8c, 0x0f, 0x1e, 0xc9, 0x31, 0x4e, 0x78, 0x2c, 0xc7,
+	0x70, 0xe1, 0xb1, 0x1c, 0xc3, 0x8d, 0xc7, 0x72, 0x0c, 0x51, 0xa6, 0xe9, 0x99, 0x25, 0x19, 0xa5,
+	0x49, 0x7a, 0xc9, 0xf9, 0xb9, 0xfa, 0xc9, 0xf9, 0xc5, 0xb9, 0xf9, 0xc5, 0x50, 0x4a, 0xb7, 0x38,
+	0x25, 0x5b, 0xbf, 0x42, 0x1f, 0xee, 0x4b, 0x23, 0x0b, 0x5d, 0xb0, 0x47, 0x4b, 0x2a, 0x0b, 0x52,
+	0x8b, 0x93, 0xd8, 0xc0, 0xfe, 0x34, 0x06, 0x04, 0x00, 0x00, 0xff, 0xff, 0xf2, 0x17, 0xb8, 0xd8,
+	0x06, 0x01, 0x00, 0x00,
 }
 
 func (m *WasmCodeEntry) Marshal() (dAtA []byte, err error) {
@@ -119,17 +129,24 @@ func (m *WasmCodeEntry) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
-	if len(m.NextCodeId) > 0 {
-		i -= len(m.NextCodeId)
-		copy(dAtA[i:], m.NextCodeId)
-		i = encodeVarintWasm(dAtA, i, uint64(len(m.NextCodeId)))
+	if len(m.NextCodeHash) > 0 {
+		i -= len(m.NextCodeHash)
+		copy(dAtA[i:], m.NextCodeHash)
+		i = encodeVarintWasm(dAtA, i, uint64(len(m.NextCodeHash)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.PreviousCodeHash) > 0 {
+		i -= len(m.PreviousCodeHash)
+		copy(dAtA[i:], m.PreviousCodeHash)
+		i = encodeVarintWasm(dAtA, i, uint64(len(m.PreviousCodeHash)))
 		i--
 		dAtA[i] = 0x12
 	}
-	if len(m.PreviousCodeId) > 0 {
-		i -= len(m.PreviousCodeId)
-		copy(dAtA[i:], m.PreviousCodeId)
-		i = encodeVarintWasm(dAtA, i, uint64(len(m.PreviousCodeId)))
+	if len(m.CodeId) > 0 {
+		i -= len(m.CodeId)
+		copy(dAtA[i:], m.CodeId)
+		i = encodeVarintWasm(dAtA, i, uint64(len(m.CodeId)))
 		i--
 		dAtA[i] = 0xa
 	}
@@ -153,11 +170,15 @@ func (m *WasmCodeEntry) Size() (n int) {
 	}
 	var l int
 	_ = l
-	l = len(m.PreviousCodeId)
+	l = len(m.CodeId)
 	if l > 0 {
 		n += 1 + l + sovWasm(uint64(l))
 	}
-	l = len(m.NextCodeId)
+	l = len(m.PreviousCodeHash)
+	if l > 0 {
+		n += 1 + l + sovWasm(uint64(l))
+	}
+	l = len(m.NextCodeHash)
 	if l > 0 {
 		n += 1 + l + sovWasm(uint64(l))
 	}
@@ -201,9 +222,9 @@ func (m *WasmCodeEntry) Unmarshal(dAtA []byte) error {
 		switch fieldNum {
 		case 1:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field PreviousCodeId", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field CodeId", wireType)
 			}
-			var stringLen uint64
+			var byteLen int
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowWasm
@@ -213,27 +234,29 @@ func (m *WasmCodeEntry) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
+				byteLen |= int(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
+			if byteLen < 0 {
 				return ErrInvalidLengthWasm
 			}
-			postIndex := iNdEx + intStringLen
+			postIndex := iNdEx + byteLen
 			if postIndex < 0 {
 				return ErrInvalidLengthWasm
 			}
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.PreviousCodeId = string(dAtA[iNdEx:postIndex])
+			m.CodeId = append(m.CodeId[:0], dAtA[iNdEx:postIndex]...)
+			if m.CodeId == nil {
+				m.CodeId = []byte{}
+			}
 			iNdEx = postIndex
 		case 2:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field NextCodeId", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field PreviousCodeHash", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -261,7 +284,39 @@ func (m *WasmCodeEntry) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.NextCodeId = string(dAtA[iNdEx:postIndex])
+			m.PreviousCodeHash = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NextCodeHash", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowWasm
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthWasm
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthWasm
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.NextCodeHash = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
