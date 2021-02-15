@@ -10,7 +10,7 @@ import (
 func GetQueryCmd() *cobra.Command {
 	queryCmd := &cobra.Command{
 		Use:                        types.SubModuleName,
-		Short:                      "IBC wasm module query subcommands",
+		Short:                      "IBC wasm manager module query subcommands",
 		DisableFlagParsing:         true,
 		SuggestionsMinimumDistance: 2,
 		RunE:                       client.ValidateCmd,
@@ -28,7 +28,7 @@ func GetQueryCmd() *cobra.Command {
 func NewTxCmd() *cobra.Command {
 	txCmd := &cobra.Command{
 		Use:                        types.SubModuleName,
-		Short:                      "IBC wasm module transaction subcommands",
+		Short:                      "IBC wasm manager module transaction subcommands",
 		DisableFlagParsing:         true,
 		SuggestionsMinimumDistance: 2,
 		RunE:                       client.ValidateCmd,

@@ -1,5 +1,5 @@
 package types
 
 const (
-	SubModuleName = "wasm"
+	SubModuleName = "wasm-manager"
 )

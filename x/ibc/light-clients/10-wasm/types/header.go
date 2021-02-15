@@ -59,29 +59,13 @@ func (m *Header) GetHeight() exported.Height {
 }
 
 func (m *Header) ValidateBasic() error {
-	const ValidateBasicQuery = "headervalidatebasic"
-	payload := make(map[string]map[string]interface{})
-	payload[ValidateBasicQuery] = make(map[string]interface{})
-	inner := payload[ValidateBasicQuery]
-	inner["self"] = m
-
-	encodedData, err := json.Marshal(payload)
-	if err != nil {
-		// TODO: Handle error
-	}
-	response, err := queryContract(m.CodeId, encodedData)
-	if err != nil {
-		// TODO: Handle error
+	if m.Data == nil || len(m.Data) == 0 {
+		return fmt.Errorf("data cannot be empty")
 	}
 
-	output := queryResponse{}
-	if err := json.Unmarshal(response, &output); err != nil {
-		// TODO: Handle error
+	if m.CodeId == nil || len(m.CodeId) == 0 {
+		return fmt.Errorf("codeid cannot be empty")
 	}
 
-	if output.Result.IsValid {
-		return nil
-	} else {
-		return fmt.Errorf("%s error while validating", output.Result.ErrorMsg)
-	}
+	return nil
 }

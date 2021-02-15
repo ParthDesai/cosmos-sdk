@@ -294,31 +294,15 @@ func (c *ClientState) GetFrozenHeight() exported.Height {
 }
 
 func (c *ClientState) Validate() error {
-	const ValidateClientStateQuery = "validateclientstate"
-	payload := make(map[string]map[string]interface{})
-	payload[ValidateClientStateQuery] = make(map[string]interface{})
-	inner := payload[ValidateClientStateQuery]
-	inner["self"] = c
-
-	encodedData, err := json.Marshal(payload)
-	if err != nil {
-		// TODO: Handle error
-	}
-	response, err := queryContract(c.CodeId, encodedData)
-	if err != nil {
-		// TODO: Handle error
+	if c.Data == nil || len(c.Data) == 0 {
+		return fmt.Errorf("data cannot be empty")
 	}
 
-	output := queryResponse{}
-	if err := json.Unmarshal(response, &output); err != nil {
-		// TODO: Handle error
+	if c.CodeId == nil || len(c.CodeId) == 0 {
+		return fmt.Errorf("codeid cannot be empty")
 	}
 
-	if output.Result.IsValid {
-		return nil
-	} else {
-		return fmt.Errorf("%s error while validating", output.Result.ErrorMsg)
-	}
+	return nil
 }
 
 func (c *ClientState) GetProofSpecs() []*ics23.ProofSpec {
