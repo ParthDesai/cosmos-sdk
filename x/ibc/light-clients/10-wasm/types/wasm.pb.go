@@ -5,8 +5,11 @@ package types
 
 import (
 	fmt "fmt"
+	types "github.com/cosmos/cosmos-sdk/x/ibc/core/02-client/types"
+	types1 "github.com/cosmos/cosmos-sdk/x/ibc/core/23-commitment/types"
 	_ "github.com/gogo/protobuf/gogoproto"
 	proto "github.com/gogo/protobuf/proto"
+	_ "github.com/golang/protobuf/ptypes/timestamp"
 	io "io"
 	math "math"
 	math_bits "math/bits"
@@ -25,9 +28,12 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 // WASM light client's Client state
 type ClientState struct {
-	Data       []byte `protobuf:"bytes,1,opt,name=data,proto3" json:"data,omitempty"`
-	CodeId     []byte `protobuf:"bytes,2,opt,name=code_id,json=codeId,proto3" json:"code_id,omitempty"`
-	InstanceId uint64 `protobuf:"varint,3,opt,name=instance_id,json=instanceId,proto3" json:"instance_id,omitempty"`
+	Data         []byte        `protobuf:"bytes,1,opt,name=data,proto3" json:"data,omitempty"`
+	CodeId       []byte        `protobuf:"bytes,2,opt,name=code_id,json=codeId,proto3" json:"code_id,omitempty"`
+	Frozen       bool          `protobuf:"varint,3,opt,name=frozen,proto3" json:"frozen,omitempty"`
+	FrozenHeight *types.Height `protobuf:"bytes,4,opt,name=frozen_height,json=frozenHeight,proto3" json:"frozen_height,omitempty"`
+	LatestHeight *types.Height `protobuf:"bytes,5,opt,name=latest_height,json=latestHeight,proto3" json:"latest_height,omitempty"`
+	Type         string        `protobuf:"bytes,6,opt,name=type,proto3" json:"type,omitempty"`
 }
 
 func (m *ClientState) Reset()         { *m = ClientState{} }
@@ -63,32 +69,16 @@ func (m *ClientState) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_ClientState proto.InternalMessageInfo
 
-func (m *ClientState) GetData() []byte {
-	if m != nil {
-		return m.Data
-	}
-	return nil
-}
-
-func (m *ClientState) GetCodeId() []byte {
-	if m != nil {
-		return m.CodeId
-	}
-	return nil
-}
-
-func (m *ClientState) GetInstanceId() uint64 {
-	if m != nil {
-		return m.InstanceId
-	}
-	return 0
-}
-
 // WASM light client's ConsensusState
 type ConsensusState struct {
-	Data       []byte `protobuf:"bytes,1,opt,name=data,proto3" json:"data,omitempty"`
-	CodeId     []byte `protobuf:"bytes,2,opt,name=code_id,json=codeId,proto3" json:"code_id,omitempty"`
-	InstanceId uint64 `protobuf:"varint,3,opt,name=instance_id,json=instanceId,proto3" json:"instance_id,omitempty"`
+	Data   []byte `protobuf:"bytes,1,opt,name=data,proto3" json:"data,omitempty"`
+	CodeId []byte `protobuf:"bytes,2,opt,name=code_id,json=codeId,proto3" json:"code_id,omitempty"`
+	// timestamp that corresponds to the block height in which the ConsensusState
+	// was stored.
+	Timestamp uint64 `protobuf:"varint,3,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
+	// commitment root (i.e app hash)
+	Root *types1.MerkleRoot `protobuf:"bytes,4,opt,name=root,proto3" json:"root,omitempty"`
+	Type string             `protobuf:"bytes,5,opt,name=type,proto3" json:"type,omitempty"`
 }
 
 func (m *ConsensusState) Reset()         { *m = ConsensusState{} }
@@ -124,31 +114,12 @@ func (m *ConsensusState) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_ConsensusState proto.InternalMessageInfo
 
-func (m *ConsensusState) GetData() []byte {
-	if m != nil {
-		return m.Data
-	}
-	return nil
-}
-
-func (m *ConsensusState) GetCodeId() []byte {
-	if m != nil {
-		return m.CodeId
-	}
-	return nil
-}
-
-func (m *ConsensusState) GetInstanceId() uint64 {
-	if m != nil {
-		return m.InstanceId
-	}
-	return 0
-}
-
 // WASM light client Header
 type Header struct {
-	Data   []byte `protobuf:"bytes,1,opt,name=data,proto3" json:"data,omitempty"`
-	CodeId []byte `protobuf:"bytes,2,opt,name=code_id,json=codeId,proto3" json:"code_id,omitempty"`
+	Data   []byte        `protobuf:"bytes,1,opt,name=data,proto3" json:"data,omitempty"`
+	CodeId []byte        `protobuf:"bytes,2,opt,name=code_id,json=codeId,proto3" json:"code_id,omitempty"`
+	Height *types.Height `protobuf:"bytes,3,opt,name=height,proto3" json:"height,omitempty"`
+	Type   string        `protobuf:"bytes,4,opt,name=type,proto3" json:"type,omitempty"`
 }
 
 func (m *Header) Reset()         { *m = Header{} }
@@ -184,27 +155,12 @@ func (m *Header) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_Header proto.InternalMessageInfo
 
-func (m *Header) GetData() []byte {
-	if m != nil {
-		return m.Data
-	}
-	return nil
-}
-
-func (m *Header) GetCodeId() []byte {
-	if m != nil {
-		return m.CodeId
-	}
-	return nil
-}
-
 // WASM light client Misbehaviour
 type Misbehaviour struct {
-	CodeId     []byte  `protobuf:"bytes,1,opt,name=code_id,json=codeId,proto3" json:"code_id,omitempty"`
-	InstanceId uint64  `protobuf:"varint,2,opt,name=instance_id,json=instanceId,proto3" json:"instance_id,omitempty"`
-	ClientId   string  `protobuf:"bytes,3,opt,name=client_id,json=clientId,proto3" json:"client_id,omitempty" yaml:"client_id"`
-	Header1    *Header `protobuf:"bytes,4,opt,name=header_1,json=header1,proto3" json:"header_1,omitempty" yaml:"header_1"`
-	Header2    *Header `protobuf:"bytes,5,opt,name=header_2,json=header2,proto3" json:"header_2,omitempty" yaml:"header_2"`
+	CodeId   []byte  `protobuf:"bytes,1,opt,name=code_id,json=codeId,proto3" json:"code_id,omitempty"`
+	ClientId string  `protobuf:"bytes,2,opt,name=client_id,json=clientId,proto3" json:"client_id,omitempty" yaml:"client_id"`
+	Header1  *Header `protobuf:"bytes,3,opt,name=header_1,json=header1,proto3" json:"header_1,omitempty" yaml:"header_1"`
+	Header2  *Header `protobuf:"bytes,4,opt,name=header_2,json=header2,proto3" json:"header_2,omitempty" yaml:"header_2"`
 }
 
 func (m *Misbehaviour) Reset()         { *m = Misbehaviour{} }
@@ -247,13 +203,6 @@ func (m *Misbehaviour) GetCodeId() []byte {
 	return nil
 }
 
-func (m *Misbehaviour) GetInstanceId() uint64 {
-	if m != nil {
-		return m.InstanceId
-	}
-	return 0
-}
-
 func (m *Misbehaviour) GetClientId() string {
 	if m != nil {
 		return m.ClientId
@@ -287,31 +236,41 @@ func init() {
 }
 
 var fileDescriptor_678928ebbdee1807 = []byte{
-	// 376 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xb4, 0x92, 0x3f, 0x4f, 0xc2, 0x40,
-	0x18, 0xc6, 0x39, 0x44, 0xfe, 0x1c, 0x44, 0x4d, 0x43, 0x62, 0xe3, 0xd0, 0x36, 0x75, 0x61, 0xa1,
-	0xb5, 0x35, 0x2e, 0x0e, 0x0e, 0xb0, 0xc8, 0xe0, 0x52, 0x17, 0x23, 0x89, 0xe4, 0xda, 0xbb, 0xb4,
-	0x17, 0x69, 0x8f, 0x70, 0x07, 0xca, 0xb7, 0xf0, 0xcb, 0xf8, 0x1d, 0x1c, 0x19, 0x9d, 0x88, 0x29,
-	0xdf, 0x80, 0x4f, 0x60, 0xb8, 0x5a, 0x42, 0x34, 0x9a, 0x30, 0x38, 0xbd, 0x4f, 0xdf, 0xf7, 0xc9,
-	0x2f, 0x4f, 0xdb, 0x07, 0x9e, 0x52, 0x3f, 0xb0, 0x87, 0x34, 0x8c, 0x44, 0x30, 0xa4, 0x24, 0x11,
-	0xdc, 0x7e, 0x42, 0x3c, 0xb6, 0xa7, 0x8e, 0x9c, 0xd6, 0x68, 0xcc, 0x04, 0x53, 0x54, 0xea, 0x07,
-	0xd6, 0xb6, 0xc9, 0x92, 0xc7, 0xa9, 0x73, 0xd2, 0x0c, 0x59, 0xc8, 0xa4, 0xc9, 0x5e, 0xab, 0xcc,
-	0x6f, 0xf6, 0x61, 0xbd, 0x2b, 0x8d, 0xb7, 0x02, 0x09, 0xa2, 0x28, 0xb0, 0x84, 0x91, 0x40, 0x2a,
-	0x30, 0x40, 0xab, 0xe1, 0x49, 0xad, 0x1c, 0xc3, 0x4a, 0xc0, 0x30, 0x19, 0x50, 0xac, 0x16, 0xe5,
-	0xba, 0xbc, 0x7e, 0xec, 0x61, 0x45, 0x87, 0x75, 0x9a, 0x70, 0x81, 0x92, 0x40, 0x1e, 0xf7, 0x0c,
-	0xd0, 0x2a, 0x79, 0x30, 0x5f, 0xf5, 0xb0, 0xf9, 0x00, 0x0f, 0xba, 0x2c, 0xe1, 0x24, 0xe1, 0x13,
-	0xfe, 0x1f, 0xfc, 0x0b, 0x58, 0xbe, 0x26, 0x08, 0x93, 0xf1, 0x4e, 0x5c, 0xf3, 0xb5, 0x08, 0x1b,
-	0x37, 0x94, 0xfb, 0x24, 0x42, 0x53, 0xca, 0x26, 0xe3, 0x6d, 0x27, 0xf8, 0x2b, 0x41, 0xf1, 0x7b,
-	0x02, 0xc5, 0x81, 0xb5, 0xec, 0x3b, 0xe7, 0x01, 0x6b, 0x9d, 0xe6, 0x6a, 0xa1, 0x1f, 0xcd, 0x50,
-	0x3c, 0xbc, 0x34, 0x37, 0x27, 0xd3, 0xab, 0x66, 0xba, 0x87, 0x95, 0x3e, 0xac, 0x46, 0x32, 0xf4,
-	0xc0, 0x51, 0x4b, 0x06, 0x68, 0xd5, 0x5d, 0xc3, 0xfa, 0xed, 0xa7, 0x59, 0xd9, 0xeb, 0x75, 0xb4,
-	0x74, 0xa1, 0x57, 0x32, 0xed, 0xac, 0x16, 0xfa, 0x61, 0x86, 0xcf, 0x31, 0xa6, 0x57, 0xc9, 0xa4,
-	0xb3, 0x05, 0x77, 0xd5, 0xfd, 0xdd, 0xe1, 0xee, 0x0f, 0xb8, 0xbb, 0x81, 0xbb, 0x9d, 0xbb, 0xb7,
-	0x54, 0x03, 0xf3, 0x54, 0x03, 0x1f, 0xa9, 0x06, 0x5e, 0x96, 0x5a, 0x61, 0xbe, 0xd4, 0x0a, 0xef,
-	0x4b, 0xad, 0x70, 0x7f, 0x15, 0x52, 0x11, 0x4d, 0x7c, 0x2b, 0x60, 0xb1, 0x1d, 0x30, 0x1e, 0x33,
-	0xfe, 0x35, 0xda, 0x1c, 0x3f, 0xda, 0xcf, 0xf6, 0xa6, 0xb9, 0xed, 0xbc, 0xba, 0xce, 0x59, 0x5b,
-	0xb6, 0x57, 0xcc, 0x46, 0x84, 0xfb, 0x65, 0x59, 0xc6, 0xf3, 0xcf, 0x00, 0x00, 0x00, 0xff, 0xff,
-	0xc7, 0x1d, 0xcc, 0x59, 0xe3, 0x02, 0x00, 0x00,
+	// 543 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x94, 0x3f, 0x6f, 0xd3, 0x4e,
+	0x18, 0xc7, 0x73, 0xad, 0xeb, 0x24, 0xd7, 0xfc, 0x7e, 0x20, 0xab, 0x02, 0x2b, 0x42, 0x4e, 0x64,
+	0x06, 0xb2, 0xc4, 0x87, 0x8d, 0xc4, 0xd0, 0x01, 0xa4, 0x74, 0x69, 0x87, 0x2e, 0x66, 0x41, 0x30,
+	0x44, 0xfe, 0x73, 0xb5, 0x4f, 0xb5, 0x73, 0x91, 0xef, 0x62, 0x28, 0x2b, 0x0b, 0x23, 0x03, 0x2f,
+	0x80, 0x37, 0xc0, 0xfb, 0x60, 0xec, 0xc8, 0x14, 0xa1, 0x64, 0x67, 0xe8, 0x2b, 0x40, 0x77, 0x67,
+	0x3b, 0x41, 0x11, 0xaa, 0xca, 0xe4, 0xef, 0x63, 0x7f, 0xfd, 0xb9, 0xef, 0xf3, 0x9c, 0xee, 0xe0,
+	0x63, 0x12, 0x46, 0x28, 0x23, 0x49, 0xca, 0xa3, 0x8c, 0xe0, 0x19, 0x67, 0xe8, 0x5d, 0xc0, 0x72,
+	0x54, 0xba, 0xf2, 0xe9, 0xcc, 0x0b, 0xca, 0xa9, 0x61, 0x92, 0x30, 0x72, 0xb6, 0x4d, 0x8e, 0xfc,
+	0x58, 0xba, 0xfd, 0xa3, 0x84, 0x26, 0x54, 0x9a, 0x90, 0x50, 0xca, 0xdf, 0x1f, 0x08, 0x68, 0x44,
+	0x0b, 0x8c, 0x94, 0x5f, 0xe0, 0x94, 0xaa, 0x0c, 0x4f, 0x36, 0x06, 0x9a, 0xe7, 0x84, 0xe7, 0xb5,
+	0xa9, 0xa9, 0x6a, 0x52, 0x42, 0x69, 0x92, 0x61, 0x24, 0xab, 0x70, 0x71, 0x81, 0x38, 0xc9, 0x31,
+	0xe3, 0x41, 0x3e, 0x57, 0x06, 0xfb, 0x17, 0x80, 0x87, 0x27, 0x12, 0xfd, 0x8a, 0x07, 0x1c, 0x1b,
+	0x06, 0xd4, 0xe2, 0x80, 0x07, 0x26, 0x18, 0x82, 0x51, 0xcf, 0x97, 0xda, 0x78, 0x08, 0xdb, 0x11,
+	0x8d, 0xf1, 0x94, 0xc4, 0xe6, 0x9e, 0x7c, 0xad, 0x8b, 0xf2, 0x2c, 0x36, 0x1e, 0x40, 0xfd, 0xa2,
+	0xa0, 0x1f, 0xf0, 0xcc, 0xdc, 0x1f, 0x82, 0x51, 0xc7, 0xaf, 0x2a, 0xe3, 0x25, 0xfc, 0x4f, 0xa9,
+	0x69, 0x8a, 0x45, 0xd7, 0xa6, 0x36, 0x04, 0xa3, 0x43, 0xaf, 0xef, 0x88, 0x39, 0x88, 0xd8, 0x4e,
+	0xd5, 0x4d, 0xe9, 0x3a, 0xa7, 0xd2, 0xe1, 0xf7, 0xd4, 0x0f, 0xaa, 0x12, 0x80, 0x2c, 0xe0, 0x98,
+	0xf1, 0x1a, 0x70, 0x70, 0x3b, 0x40, 0xfd, 0x50, 0x01, 0x0c, 0xa8, 0xf1, 0xab, 0x39, 0x36, 0xf5,
+	0x21, 0x18, 0x75, 0x7d, 0xa9, 0x8f, 0xb5, 0x4f, 0x5f, 0x07, 0x2d, 0xfb, 0x1b, 0x80, 0xff, 0x9f,
+	0xd0, 0x19, 0xc3, 0x33, 0xb6, 0x60, 0xff, 0xd0, 0xf3, 0x23, 0xd8, 0x6d, 0x66, 0x28, 0xdb, 0xd6,
+	0xfc, 0xcd, 0x0b, 0xe3, 0x39, 0xd4, 0x0a, 0x4a, 0xeb, 0x86, 0xed, 0xad, 0xbc, 0x9b, 0x9d, 0x29,
+	0x5d, 0xe7, 0x1c, 0x17, 0x97, 0x19, 0xf6, 0x29, 0xe5, 0xbe, 0xf4, 0x37, 0x79, 0x0f, 0x76, 0xf2,
+	0x7e, 0x04, 0x50, 0x3f, 0xc5, 0x41, 0x8c, 0x8b, 0xbb, 0xe5, 0xf4, 0xa0, 0x5e, 0xcd, 0x6e, 0xff,
+	0xd6, 0xd9, 0x55, 0xce, 0x26, 0x85, 0xb6, 0x93, 0xe2, 0xcb, 0x1e, 0xec, 0x9d, 0x13, 0x16, 0xe2,
+	0x34, 0x28, 0x09, 0x5d, 0x14, 0xdb, 0xeb, 0x82, 0x3f, 0xd6, 0x75, 0x61, 0x57, 0xf1, 0xeb, 0x48,
+	0xdd, 0xc9, 0xd1, 0xcd, 0x72, 0x70, 0xff, 0x2a, 0xc8, 0xb3, 0x63, 0xbb, 0xf9, 0x64, 0xfb, 0x1d,
+	0xa5, 0xcf, 0x62, 0xe3, 0x2d, 0xec, 0xa4, 0xb2, 0xc3, 0xa9, 0x5b, 0x85, 0x1d, 0x3a, 0x7f, 0x3b,
+	0x31, 0x8e, 0x9a, 0xc5, 0xc4, 0x5a, 0x2d, 0x07, 0x6d, 0xa5, 0xdd, 0x9b, 0xe5, 0xe0, 0x9e, 0xc2,
+	0xd7, 0x18, 0xdb, 0x6f, 0x2b, 0xe9, 0x6e, 0xc1, 0xbd, 0x6a, 0x57, 0xee, 0x04, 0xf7, 0x76, 0xe0,
+	0x5e, 0x03, 0xf7, 0x26, 0xaf, 0xbf, 0xaf, 0x2c, 0x70, 0xbd, 0xb2, 0xc0, 0xcf, 0x95, 0x05, 0x3e,
+	0xaf, 0xad, 0xd6, 0xf5, 0xda, 0x6a, 0xfd, 0x58, 0x5b, 0xad, 0x37, 0x2f, 0x12, 0xc2, 0xd3, 0x45,
+	0x28, 0xf6, 0x1d, 0x45, 0x94, 0xe5, 0x94, 0x55, 0x8f, 0x31, 0x8b, 0x2f, 0xd1, 0x7b, 0xd4, 0x5c,
+	0x1b, 0xe3, 0xfa, 0xde, 0x70, 0x9f, 0x8e, 0xe5, 0xd5, 0x21, 0xa6, 0xce, 0x42, 0x5d, 0x1e, 0xcf,
+	0x67, 0xbf, 0x03, 0x00, 0x00, 0xff, 0xff, 0x7e, 0x96, 0x0d, 0x52, 0x60, 0x04, 0x00, 0x00,
 }
 
 func (m *ClientState) Marshal() (dAtA []byte, err error) {
@@ -334,8 +293,44 @@ func (m *ClientState) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
-	if m.InstanceId != 0 {
-		i = encodeVarintWasm(dAtA, i, uint64(m.InstanceId))
+	if len(m.Type) > 0 {
+		i -= len(m.Type)
+		copy(dAtA[i:], m.Type)
+		i = encodeVarintWasm(dAtA, i, uint64(len(m.Type)))
+		i--
+		dAtA[i] = 0x32
+	}
+	if m.LatestHeight != nil {
+		{
+			size, err := m.LatestHeight.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintWasm(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x2a
+	}
+	if m.FrozenHeight != nil {
+		{
+			size, err := m.FrozenHeight.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintWasm(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x22
+	}
+	if m.Frozen {
+		i--
+		if m.Frozen {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
 		i--
 		dAtA[i] = 0x18
 	}
@@ -376,8 +371,27 @@ func (m *ConsensusState) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
-	if m.InstanceId != 0 {
-		i = encodeVarintWasm(dAtA, i, uint64(m.InstanceId))
+	if len(m.Type) > 0 {
+		i -= len(m.Type)
+		copy(dAtA[i:], m.Type)
+		i = encodeVarintWasm(dAtA, i, uint64(len(m.Type)))
+		i--
+		dAtA[i] = 0x2a
+	}
+	if m.Root != nil {
+		{
+			size, err := m.Root.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintWasm(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x22
+	}
+	if m.Timestamp != 0 {
+		i = encodeVarintWasm(dAtA, i, uint64(m.Timestamp))
 		i--
 		dAtA[i] = 0x18
 	}
@@ -418,6 +432,25 @@ func (m *Header) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
+	if len(m.Type) > 0 {
+		i -= len(m.Type)
+		copy(dAtA[i:], m.Type)
+		i = encodeVarintWasm(dAtA, i, uint64(len(m.Type)))
+		i--
+		dAtA[i] = 0x22
+	}
+	if m.Height != nil {
+		{
+			size, err := m.Height.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintWasm(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x1a
+	}
 	if len(m.CodeId) > 0 {
 		i -= len(m.CodeId)
 		copy(dAtA[i:], m.CodeId)
@@ -465,7 +498,7 @@ func (m *Misbehaviour) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			i = encodeVarintWasm(dAtA, i, uint64(size))
 		}
 		i--
-		dAtA[i] = 0x2a
+		dAtA[i] = 0x22
 	}
 	if m.Header1 != nil {
 		{
@@ -477,19 +510,14 @@ func (m *Misbehaviour) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			i = encodeVarintWasm(dAtA, i, uint64(size))
 		}
 		i--
-		dAtA[i] = 0x22
+		dAtA[i] = 0x1a
 	}
 	if len(m.ClientId) > 0 {
 		i -= len(m.ClientId)
 		copy(dAtA[i:], m.ClientId)
 		i = encodeVarintWasm(dAtA, i, uint64(len(m.ClientId)))
 		i--
-		dAtA[i] = 0x1a
-	}
-	if m.InstanceId != 0 {
-		i = encodeVarintWasm(dAtA, i, uint64(m.InstanceId))
-		i--
-		dAtA[i] = 0x10
+		dAtA[i] = 0x12
 	}
 	if len(m.CodeId) > 0 {
 		i -= len(m.CodeId)
@@ -526,8 +554,20 @@ func (m *ClientState) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovWasm(uint64(l))
 	}
-	if m.InstanceId != 0 {
-		n += 1 + sovWasm(uint64(m.InstanceId))
+	if m.Frozen {
+		n += 2
+	}
+	if m.FrozenHeight != nil {
+		l = m.FrozenHeight.Size()
+		n += 1 + l + sovWasm(uint64(l))
+	}
+	if m.LatestHeight != nil {
+		l = m.LatestHeight.Size()
+		n += 1 + l + sovWasm(uint64(l))
+	}
+	l = len(m.Type)
+	if l > 0 {
+		n += 1 + l + sovWasm(uint64(l))
 	}
 	return n
 }
@@ -546,8 +586,16 @@ func (m *ConsensusState) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovWasm(uint64(l))
 	}
-	if m.InstanceId != 0 {
-		n += 1 + sovWasm(uint64(m.InstanceId))
+	if m.Timestamp != 0 {
+		n += 1 + sovWasm(uint64(m.Timestamp))
+	}
+	if m.Root != nil {
+		l = m.Root.Size()
+		n += 1 + l + sovWasm(uint64(l))
+	}
+	l = len(m.Type)
+	if l > 0 {
+		n += 1 + l + sovWasm(uint64(l))
 	}
 	return n
 }
@@ -566,6 +614,14 @@ func (m *Header) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovWasm(uint64(l))
 	}
+	if m.Height != nil {
+		l = m.Height.Size()
+		n += 1 + l + sovWasm(uint64(l))
+	}
+	l = len(m.Type)
+	if l > 0 {
+		n += 1 + l + sovWasm(uint64(l))
+	}
 	return n
 }
 
@@ -578,9 +634,6 @@ func (m *Misbehaviour) Size() (n int) {
 	l = len(m.CodeId)
 	if l > 0 {
 		n += 1 + l + sovWasm(uint64(l))
-	}
-	if m.InstanceId != 0 {
-		n += 1 + sovWasm(uint64(m.InstanceId))
 	}
 	l = len(m.ClientId)
 	if l > 0 {
@@ -702,9 +755,9 @@ func (m *ClientState) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 3:
 			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field InstanceId", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Frozen", wireType)
 			}
-			m.InstanceId = 0
+			var v int
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowWasm
@@ -714,11 +767,116 @@ func (m *ClientState) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.InstanceId |= uint64(b&0x7F) << shift
+				v |= int(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
+			m.Frozen = bool(v != 0)
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field FrozenHeight", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowWasm
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthWasm
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthWasm
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.FrozenHeight == nil {
+				m.FrozenHeight = &types.Height{}
+			}
+			if err := m.FrozenHeight.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 5:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field LatestHeight", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowWasm
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthWasm
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthWasm
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.LatestHeight == nil {
+				m.LatestHeight = &types.Height{}
+			}
+			if err := m.LatestHeight.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 6:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Type", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowWasm
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthWasm
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthWasm
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Type = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skipWasm(dAtA[iNdEx:])
@@ -842,9 +1000,9 @@ func (m *ConsensusState) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 3:
 			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field InstanceId", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Timestamp", wireType)
 			}
-			m.InstanceId = 0
+			m.Timestamp = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowWasm
@@ -854,11 +1012,79 @@ func (m *ConsensusState) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.InstanceId |= uint64(b&0x7F) << shift
+				m.Timestamp |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Root", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowWasm
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthWasm
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthWasm
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Root == nil {
+				m.Root = &types1.MerkleRoot{}
+			}
+			if err := m.Root.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 5:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Type", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowWasm
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthWasm
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthWasm
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Type = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skipWasm(dAtA[iNdEx:])
@@ -980,6 +1206,74 @@ func (m *Header) Unmarshal(dAtA []byte) error {
 				m.CodeId = []byte{}
 			}
 			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Height", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowWasm
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthWasm
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthWasm
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Height == nil {
+				m.Height = &types.Height{}
+			}
+			if err := m.Height.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Type", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowWasm
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthWasm
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthWasm
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Type = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skipWasm(dAtA[iNdEx:])
@@ -1068,25 +1362,6 @@ func (m *Misbehaviour) Unmarshal(dAtA []byte) error {
 			}
 			iNdEx = postIndex
 		case 2:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field InstanceId", wireType)
-			}
-			m.InstanceId = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowWasm
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.InstanceId |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 3:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field ClientId", wireType)
 			}
@@ -1118,7 +1393,7 @@ func (m *Misbehaviour) Unmarshal(dAtA []byte) error {
 			}
 			m.ClientId = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-		case 4:
+		case 3:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Header1", wireType)
 			}
@@ -1154,7 +1429,7 @@ func (m *Misbehaviour) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 5:
+		case 4:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Header2", wireType)
 			}

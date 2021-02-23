@@ -171,26 +171,7 @@ Following functions only queries the state so should be part of query call
  */
 
 func (c *ClientState) ClientType() string {
-	const ClientTypeQuery = "clienttype"
-	payload := make(map[string]map[string]interface{})
-	payload[ClientTypeQuery] = make(map[string]interface{})
-	inner := payload[ClientTypeQuery]
-	inner["self"] = c
-
-	encodedData, err := json.Marshal(payload)
-	if err != nil {
-		// TODO: Handle error
-	}
-	response, err := queryContract(c.CodeId, encodedData)
-	if err != nil {
-		// TODO: Handle error
-	}
-	output := queryResponse{}
-	if err := json.Unmarshal(response, &output); err != nil {
-		// TODO: Handle error
-	}
-
-	return output.ClientType
+	return c.Type
 }
 
 func (c *ClientState) ExportMetadata(store sdk.KVStore) []exported.GenesisMetadata {
@@ -222,75 +203,15 @@ func (c *ClientState) ExportMetadata(store sdk.KVStore) []exported.GenesisMetada
 }
 
 func (c *ClientState) GetLatestHeight() exported.Height {
-	const GetLatestHeightQuery = "getlatestheight"
-	payload := make(map[string]map[string]interface{})
-	payload[GetLatestHeightQuery] = make(map[string]interface{})
-	inner := payload[GetLatestHeightQuery]
-	inner["self"] = c
-
-	encodedData, err := json.Marshal(payload)
-	if err != nil {
-		// TODO: Handle error
-	}
-	response, err := queryContract(c.CodeId, encodedData)
-	if err != nil {
-		// TODO: Handle error
-	}
-
-	output := queryResponse{}
-	if err := json.Unmarshal(response, &output); err != nil {
-		// TODO: Handle error
-	}
-
-	return output.Height
+	return c.LatestHeight
 }
 
 func (c *ClientState) IsFrozen() bool {
-	const IsFrozenQuery = "isfrozen"
-	payload := make(map[string]map[string]interface{})
-	payload[IsFrozenQuery] = make(map[string]interface{})
-	inner := payload[IsFrozenQuery]
-	inner["self"] = c
-
-	encodedData, err := json.Marshal(payload)
-	if err != nil {
-		// TODO: Handle error
-	}
-	response, err := queryContract(c.CodeId, encodedData)
-	if err != nil {
-		// TODO: Handle error
-	}
-
-	output := queryResponse{}
-	if err := json.Unmarshal(response, &output); err != nil {
-		// TODO: Handle error
-	}
-
-	return output.IsFrozen
+	return c.Frozen
 }
 
 func (c *ClientState) GetFrozenHeight() exported.Height {
-	const GetFrozenHeightQuery = "getfrozenheight"
-	payload := make(map[string]map[string]interface{})
-	payload[GetFrozenHeightQuery] = make(map[string]interface{})
-	inner := payload[GetFrozenHeightQuery]
-	inner["self"] = c
-
-	encodedData, err := json.Marshal(payload)
-	if err != nil {
-		// TODO: Handle error
-	}
-	response, err := queryContract(c.CodeId, encodedData)
-	if err != nil {
-		// TODO: Handle error
-	}
-
-	output := queryResponse{}
-	if err := json.Unmarshal(response, &output); err != nil {
-		// TODO: Handle error
-	}
-
-	return output.FrozenHeight
+	return c.FrozenHeight
 }
 
 func (c *ClientState) Validate() error {

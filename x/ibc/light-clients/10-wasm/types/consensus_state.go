@@ -1,85 +1,34 @@
 package types
 
 import (
-	"encoding/json"
 	"fmt"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	clienttypes "github.com/cosmos/cosmos-sdk/x/ibc/core/02-client/types"
 	"github.com/cosmos/cosmos-sdk/x/ibc/core/exported"
 )
 
 var _ exported.ConsensusState = (*ConsensusState)(nil)
 
 func (m *ConsensusState) ClientType() string {
-	const ClientTypeQuery = "consensusclienttype"
-	payload := make(map[string]map[string]interface{})
-	payload[ClientTypeQuery] = make(map[string]interface{})
-	inner := payload[ClientTypeQuery]
-	inner["self"] = m
-
-	encodedData, err := json.Marshal(payload)
-	if err != nil {
-		// TODO: Handle error
-	}
-	response, err := queryContract(m.CodeId, encodedData)
-	if err != nil {
-		// TODO: Handle error
-	}
-	output := queryResponse{}
-	if err := json.Unmarshal(response, &output); err != nil {
-		// TODO: Handle error
-	}
-
-	return output.ClientType
+	return m.Type
 }
 
 func (m *ConsensusState) GetRoot() exported.Root {
-	const GetRootQuery = "consensusgetroot"
-	payload := make(map[string]map[string]interface{})
-	payload[GetRootQuery] = make(map[string]interface{})
-	inner := payload[GetRootQuery]
-	inner["self"] = m
-
-	encodedData, err := json.Marshal(payload)
-	if err != nil {
-		// TODO: Handle error
-	}
-	response, err := queryContract(m.CodeId, encodedData)
-	if err != nil {
-		// TODO: Handle error
-	}
-
-	output := queryResponse{}
-	if err := json.Unmarshal(response, &output); err != nil {
-		// TODO: Handle error
-	}
-
-	return output.Root
+	return m.Root
 }
 
 func (m *ConsensusState) GetTimestamp() uint64 {
-	const GetTimeStampQuery = "consensusgettimestamp"
-	payload := make(map[string]map[string]interface{})
-	payload[GetTimeStampQuery] = make(map[string]interface{})
-	inner := payload[GetTimeStampQuery]
-	inner["self"] = m
-
-	encodedData, err := json.Marshal(payload)
-	if err != nil {
-		// TODO: Handle error
-	}
-	response, err := queryContract(m.CodeId, encodedData)
-	if err != nil {
-		// TODO: Handle error
-	}
-
-	output := queryResponse{}
-	if err := json.Unmarshal(response, &output); err != nil {
-		// TODO: Handle error
-	}
-
-	return output.Timestamp
+	return m.Timestamp
 }
 
 func (m *ConsensusState) ValidateBasic() error {
+	if m.Root.Empty() {
+		return sdkerrors.Wrap(clienttypes.ErrInvalidConsensus, "root cannot be empty")
+	}
+	if m.Timestamp == 0 {
+		return sdkerrors.Wrap(clienttypes.ErrInvalidConsensus, "timestamp cannot be zero Unix time")
+	}
+
 	if m.Data == nil || len(m.Data) == 0 {
 		return fmt.Errorf("data cannot be empty")
 	}
