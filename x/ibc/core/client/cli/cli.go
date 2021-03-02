@@ -26,6 +26,7 @@ func GetTxCmd() *cobra.Command {
 	ibcTxCmd.AddCommand(
 		solomachine.GetTxCmd(),
 		tendermint.GetTxCmd(),
+		wasm.GetTxCmd(),
 		connection.GetTxCmd(),
 		channel.GetTxCmd(),
 		wasm.GetTxCmd(),
