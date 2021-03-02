@@ -25,6 +25,11 @@ func (c *ClientState) Initialize(context sdk.Context, marshaler codec.BinaryMars
 	payload["self"] = c
 	payload["consensus_state"] = state
 
+	_, err := initContract(c.CodeId, context, store, []byte{})
+	if err != nil {
+		// TODO: Handle error
+	}
+
 	encodedData, err := json.Marshal(payload)
 	if err != nil {
 		// TODO: Handle error

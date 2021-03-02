@@ -39,6 +39,43 @@ type clientStateCallResponse struct {
 	Result contractResult `json:"result,omitempty"`
 }
 
+func initContract(codeId []byte, ctx sdk.Context, store sdk.KVStore, msg []byte) (*types.InitResponse, error) {
+	gasMeter := ctx.BlockGasMeter()
+	chainID := ctx.BlockHeader().ChainID
+	height := ctx.BlockHeader().Height
+	// safety checks before casting below
+	if height < 0 {
+		panic("Block height must never be negative")
+	}
+	sec := ctx.BlockTime().Unix()
+	if sec < 0 {
+		panic("Block (unix) time must never be negative ")
+	}
+	nano := ctx.BlockTime().Nanosecond()
+	env := types.Env{
+		Block: types.BlockInfo{
+			Height:    uint64(height),
+			Time:      uint64(sec),
+			TimeNanos: uint64(nano),
+			ChainID:   chainID,
+		},
+		Contract: types.ContractInfo{
+			Address: "",
+		},
+	}
+
+	msgInfo := types.MessageInfo{
+		Sender:  "",
+		SentFunds: nil,
+	}
+	mockFailureAPI := *api.NewMockFailureAPI()
+	mockQuerier := api.MockQuerier{}
+
+
+	response, _, err := keeper.WasmVM.Instantiate(codeId, env, msgInfo, msg, store, mockFailureAPI, mockQuerier, gasMeter, gasMeter.Limit())
+	return response, err
+}
+
 func callContract(codeId []byte, ctx sdk.Context, store sdk.KVStore, msg []byte) (*types.HandleResponse, error) {
 	gasMeter := ctx.BlockGasMeter()
 	chainID := ctx.BlockHeader().ChainID
