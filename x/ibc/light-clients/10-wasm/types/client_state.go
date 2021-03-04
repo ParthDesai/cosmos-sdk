@@ -21,9 +21,12 @@ Following are functions that modifies state, so should be part of handle call
 
 
 func (c *ClientState) Initialize(context sdk.Context, marshaler codec.BinaryMarshaler, store sdk.KVStore, state exported.ConsensusState) error {
-	payload := make(map[string]interface{})
-	payload["self"] = c
-	payload["consensus_state"] = state
+	const InitializeState = "initializestate"
+	payload := make(map[string]map[string]interface{})
+	payload[InitializeState] = make(map[string]interface{})
+	inner := payload[InitializeState]
+	inner["self"] = c
+	inner["consensus_state"] = state
 
 	_, err := initContract(c.CodeId, context, store, []byte{})
 	if err != nil {
