@@ -1,7 +1,7 @@
 package cli
 
 import (
-	"encoding/hex"
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"github.com/cosmos/cosmos-sdk/client"
@@ -20,17 +20,12 @@ func NewCreateClientCmd() *cobra.Command {
 		Use:   "create [CodeID in hex] [path/to/consensus_state.bin] [path/to/client_state.bin]",
 		Short: "create new wasm client",
 		Long: "Create a new wasm IBC client",
-		Example: fmt.Sprintf("%s tx ibc %s create [CodeID in hex] [path/to/consensus_state.json] [path/to/client_state.json]", version.AppName, types.SubModuleName),
-		Args:    cobra.ExactArgs(3),
+		Example: fmt.Sprintf("%s tx ibc %s create [path/to/consensus_state.json] [path/to/client_state.json]", version.AppName, types.SubModuleName),
+		Args:    cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
 				return err
-			}
-
-			codeID, err := hex.DecodeString(args[0])
-			if err != nil {
-				return errors.Wrap(err, "error decoding codeId, it is not properly hex encoded")
 			}
 
 			clientStateBytes, err := ioutil.ReadFile(args[1])
@@ -42,7 +37,6 @@ func NewCreateClientCmd() *cobra.Command {
 			if err := json.Unmarshal(clientStateBytes, &clientState); err != nil {
 				return errors.Wrap(err, "error unmarshalling client state")
 			}
-			clientState.CodeId = codeID
 
 			consensusStateBytes, err := ioutil.ReadFile(args[2])
 			if err != nil {
@@ -53,7 +47,10 @@ func NewCreateClientCmd() *cobra.Command {
 			if err := json.Unmarshal(consensusStateBytes, &consensusState); err != nil {
 				return errors.Wrap(err, "error unmarshalling consensus state")
 			}
-			consensusState.CodeId = codeID
+
+			if bytes.Compare(clientState.CodeId, consensusState.CodeId) != 0 {
+				return fmt.Errorf("CodeId mismatch between client state and consensus state")
+			}
 
 			msg, err := clienttypes.NewMsgCreateClient(
 				&clientState, &consensusState, clientCtx.GetFromAddress(),
@@ -84,18 +81,13 @@ func NewUpdateClientCmd() *cobra.Command {
 			"$ %s tx ibc %s update [client-id] [path/to/header.json] --from node0 --home ../node0/<app>cli --chain-id $CID",
 			version.AppName, types.SubModuleName,
 		),
-		Args: cobra.ExactArgs(3),
+		Args: cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
 				return err
 			}
 			clientID := args[0]
-
-			codeID, err := hex.DecodeString(args[1])
-			if err != nil {
-				return errors.Wrap(err, "error decoding codeId, it is not properly hex encoded")
-			}
 
 			headerBytes, err := ioutil.ReadFile(args[2])
 			if err != nil {
@@ -106,7 +98,6 @@ func NewUpdateClientCmd() *cobra.Command {
 			if err := json.Unmarshal(headerBytes, &header); err != nil {
 				return errors.Wrap(err, "error unmarshalling header")
 			}
-			header.CodeId = codeID
 
 			msg, err := clienttypes.NewMsgUpdateClient(clientID, &header, clientCtx.GetFromAddress())
 			if err != nil {
@@ -132,21 +123,16 @@ func NewSubmitMisbehaviourCmd() *cobra.Command {
 		Short: "submit a client misbehaviour",
 		Long:  "submit a client misbehaviour to invalidate to invalidate previous state roots and prevent future updates",
 		Example: fmt.Sprintf(
-			"$ %s tx ibc %s misbehaviour [client-Id] [codeId in hex] [path/to/header1.json] [path/to/header2.json] --from node0 --home ../node0/<app>cli --chain-id $CID",
+			"$ %s tx ibc %s misbehaviour [client-Id] [path/to/header1.json] [path/to/header2.json] --from node0 --home ../node0/<app>cli --chain-id $CID",
 			version.AppName, types.SubModuleName,
 		),
-		Args: cobra.ExactArgs(4),
+		Args: cobra.ExactArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
 				return err
 			}
 			clientID := args[0]
-
-			codeID, err := hex.DecodeString(args[1])
-			if err != nil {
-				return errors.Wrap(err, "error decoding codeId, it is not properly hex encoded")
-			}
 
 			header1Bytes, err := ioutil.ReadFile(args[2])
 			if err != nil {
@@ -156,7 +142,6 @@ func NewSubmitMisbehaviourCmd() *cobra.Command {
 			if err := json.Unmarshal(header1Bytes, &header1); err != nil {
 				return errors.Wrap(err, "error unmarshalling header1")
 			}
-			header1.CodeId = codeID
 
 			header2Bytes, err := ioutil.ReadFile(args[3])
 			if err != nil {
@@ -166,10 +151,14 @@ func NewSubmitMisbehaviourCmd() *cobra.Command {
 			if err := json.Unmarshal(header2Bytes, &header2); err != nil {
 				return errors.Wrap(err, "error unmarshalling header2")
 			}
-			header2.CodeId = codeID
+
+			if bytes.Compare(header1.CodeId, header2.CodeId) != 0 {
+				return fmt.Errorf("CodeId mismatch between two headers")
+			}
+
 
 			misbehaviour := types.Misbehaviour{
-				CodeId:     codeID,
+				CodeId:     header1.CodeId,
 				ClientId:   clientID,
 				Header1:    &header1,
 				Header2:    &header2,
