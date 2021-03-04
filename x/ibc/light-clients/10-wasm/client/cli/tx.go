@@ -2,6 +2,7 @@ package cli
 
 import (
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
@@ -9,6 +10,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/version"
 	clienttypes "github.com/cosmos/cosmos-sdk/x/ibc/core/02-client/types"
 	"github.com/cosmos/cosmos-sdk/x/ibc/light-clients/10-wasm/types"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"io/ioutil"
 )
@@ -18,7 +20,7 @@ func NewCreateClientCmd() *cobra.Command {
 		Use:   "create [CodeID in hex] [path/to/consensus_state.bin] [path/to/client_state.bin]",
 		Short: "create new wasm client",
 		Long: "Create a new wasm IBC client",
-		Example: fmt.Sprintf("%s tx ibc %s create [CodeID in hex] [path/to/consensus_state.bin] [path/to/client_state.bin]", version.AppName, types.SubModuleName),
+		Example: fmt.Sprintf("%s tx ibc %s create [CodeID in hex] [path/to/consensus_state.json] [path/to/client_state.json]", version.AppName, types.SubModuleName),
 		Args:    cobra.ExactArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
@@ -28,38 +30,40 @@ func NewCreateClientCmd() *cobra.Command {
 
 			codeID, err := hex.DecodeString(args[0])
 			if err != nil {
-				// TODO: Handle error
+				return errors.Wrap(err, "error decoding codeId, it is not properly hex encoded")
 			}
 
 			clientStateBytes, err := ioutil.ReadFile(args[1])
 			if err != nil {
-				// TODO: Handle error
+				return errors.Wrap(err, "error reading client state from file")
 			}
+
+			clientState := types.ClientState{}
+			if err := json.Unmarshal(clientStateBytes, &clientState); err != nil {
+				return errors.Wrap(err, "error unmarshalling client state")
+			}
+			clientState.CodeId = codeID
 
 			consensusStateBytes, err := ioutil.ReadFile(args[2])
 			if err != nil {
-				// TODO: Handle error
+				return errors.Wrap(err, "error reading consensus state from file")
 			}
 
-			clientState := types.ClientState{
-				Data: clientStateBytes,
-				CodeId: codeID,
+			consensusState := types.ConsensusState{}
+			if err := json.Unmarshal(consensusStateBytes, &consensusState); err != nil {
+				return errors.Wrap(err, "error unmarshalling consensus state")
 			}
-
-			consensusState := types.ConsensusState{
-				Data: consensusStateBytes,
-				CodeId: codeID,
-			}
+			consensusState.CodeId = codeID
 
 			msg, err := clienttypes.NewMsgCreateClient(
 				&clientState, &consensusState, clientCtx.GetFromAddress(),
 			)
 			if err != nil {
-				return err
+				return errors.Wrap(err, "error composing MsgCreateClient")
 			}
 
 			if err := msg.ValidateBasic(); err != nil {
-				return err
+				return errors.Wrap(err, "error validating MsgCreateClient")
 			}
 
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
@@ -77,7 +81,7 @@ func NewUpdateClientCmd() *cobra.Command {
 		Short: "update existing client with a header",
 		Long:  "update existing wasm client with a header",
 		Example: fmt.Sprintf(
-			"$ %s tx ibc %s update [client-id] [path/to/header.bin] --from node0 --home ../node0/<app>cli --chain-id $CID",
+			"$ %s tx ibc %s update [client-id] [path/to/header.json] --from node0 --home ../node0/<app>cli --chain-id $CID",
 			version.AppName, types.SubModuleName,
 		),
 		Args: cobra.ExactArgs(3),
@@ -90,26 +94,27 @@ func NewUpdateClientCmd() *cobra.Command {
 
 			codeID, err := hex.DecodeString(args[1])
 			if err != nil {
-				// TODO: Handle error
+				return errors.Wrap(err, "error decoding codeId, it is not properly hex encoded")
 			}
 
 			headerBytes, err := ioutil.ReadFile(args[2])
 			if err != nil {
-				// TODO: Handle error
+				return errors.Wrap(err, "error reading header from file")
 			}
 
-			header := types.Header{
-				Data: headerBytes,
-				CodeId: codeID,
+			header := types.Header{}
+			if err := json.Unmarshal(headerBytes, &header); err != nil {
+				return errors.Wrap(err, "error unmarshalling header")
 			}
+			header.CodeId = codeID
 
 			msg, err := clienttypes.NewMsgUpdateClient(clientID, &header, clientCtx.GetFromAddress())
 			if err != nil {
-				return err
+				return errors.Wrap(err, "error composing MsgUpdateClient")
 			}
 
 			if err := msg.ValidateBasic(); err != nil {
-				return err
+				return errors.Wrap(err, "error validating MsgUpdateClient")
 			}
 
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
@@ -123,11 +128,11 @@ func NewUpdateClientCmd() *cobra.Command {
 
 func NewSubmitMisbehaviourCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "misbehaviour [client-Id] [codeId in hex] [path/to/header1.bin] [path/to/header2.bin]",
+		Use:   "misbehaviour [client-Id] [codeId in hex] [path/to/header1.json] [path/to/header2.json]",
 		Short: "submit a client misbehaviour",
 		Long:  "submit a client misbehaviour to invalidate to invalidate previous state roots and prevent future updates",
 		Example: fmt.Sprintf(
-			"$ %s tx ibc %s misbehaviour [client-Id] [codeId in hex] [path/to/header1.bin] [path/to/header2.bin] --from node0 --home ../node0/<app>cli --chain-id $CID",
+			"$ %s tx ibc %s misbehaviour [client-Id] [codeId in hex] [path/to/header1.json] [path/to/header2.json] --from node0 --home ../node0/<app>cli --chain-id $CID",
 			version.AppName, types.SubModuleName,
 		),
 		Args: cobra.ExactArgs(4),
@@ -140,28 +145,28 @@ func NewSubmitMisbehaviourCmd() *cobra.Command {
 
 			codeID, err := hex.DecodeString(args[1])
 			if err != nil {
-				// TODO: Handle error
+				return errors.Wrap(err, "error decoding codeId, it is not properly hex encoded")
 			}
 
 			header1Bytes, err := ioutil.ReadFile(args[2])
 			if err != nil {
-				// TODO: Handle error
+				return errors.Wrap(err, "error reading header1 from file")
 			}
+			header1 := types.Header{}
+			if err := json.Unmarshal(header1Bytes, &header1); err != nil {
+				return errors.Wrap(err, "error unmarshalling header1")
+			}
+			header1.CodeId = codeID
 
 			header2Bytes, err := ioutil.ReadFile(args[3])
 			if err != nil {
-				// TODO: Handle error
+				return errors.Wrap(err, "error reading header2 from file")
 			}
-
-			header1 := types.Header{
-				Data:   header1Bytes,
-				CodeId: codeID,
+			header2 := types.Header{}
+			if err := json.Unmarshal(header2Bytes, &header2); err != nil {
+				return errors.Wrap(err, "error unmarshalling header2")
 			}
-
-			header2 := types.Header{
-				Data:   header2Bytes,
-				CodeId: codeID,
-			}
+			header2.CodeId = codeID
 
 			misbehaviour := types.Misbehaviour{
 				CodeId:     codeID,
@@ -172,11 +177,11 @@ func NewSubmitMisbehaviourCmd() *cobra.Command {
 
 			msg, err := clienttypes.NewMsgSubmitMisbehaviour(misbehaviour.ClientId, &misbehaviour, clientCtx.GetFromAddress())
 			if err != nil {
-				return err
+				return errors.Wrap(err, "error composing MsgSubmitMisbehaviour")
 			}
 
 			if err := msg.ValidateBasic(); err != nil {
-				return err
+				return errors.Wrap(err, "error validating MsgSubmitMisbehaviour")
 			}
 
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
