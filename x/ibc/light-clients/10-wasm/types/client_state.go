@@ -7,13 +7,9 @@ import (
 	ics23 "github.com/confio/ics23/go"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/ibc/core/exported"
 )
-
-
-func NewClientState() {
-
-}
 
 /**
 Following are functions that modifies state, so should be part of handle call
@@ -30,20 +26,20 @@ func (c *ClientState) Initialize(context sdk.Context, marshaler codec.BinaryMars
 
 	_, err := initContract(c.CodeId, context, store, []byte{})
 	if err != nil {
-		// TODO: Handle error
+		return sdkerrors.Wrapf(ErrUnableToInit, fmt.Sprintf("underlying error: %s", err.Error()))
 	}
 
 	encodedData, err := json.Marshal(payload)
 	if err != nil {
-		// TODO: Handle error
+		return sdkerrors.Wrapf(ErrUnableToMarshalPayload, fmt.Sprintf("underlying error: %s", err.Error()))
 	}
 	out, err := callContract(c.CodeId, context, store, encodedData)
 	if err != nil {
-		// TODO: Handle error
+		return sdkerrors.Wrapf(ErrUnableToCall, fmt.Sprintf("underlying error: %s", err.Error()))
 	}
 	output := clientStateCallResponse{}
 	if err := json.Unmarshal(out.Data, &output); err != nil {
-		// TODO: Handle error
+		return sdkerrors.Wrapf(ErrUnableToUnmarshalPayload, fmt.Sprintf("underlying error: %s", err.Error()))
 	}
 	if !output.Result.IsValid {
 		return fmt.Errorf("%s error ocurred while initializing client", output.Result.ErrorMsg)
@@ -63,15 +59,15 @@ func (c *ClientState) CheckHeaderAndUpdateState(context sdk.Context, marshaler c
 
 	encodedData, err := json.Marshal(payload)
 	if err != nil {
-		// TODO: Handle error
+		return nil, nil, sdkerrors.Wrapf(ErrUnableToMarshalPayload, fmt.Sprintf("underlying error: %s", err.Error()))
 	}
 	out, err := callContract(c.CodeId, context, store, encodedData)
 	if err != nil {
-		// TODO: Handle error
+		return nil, nil, sdkerrors.Wrapf(ErrUnableToCall, fmt.Sprintf("underlying error: %s", err.Error()))
 	}
 	output := clientStateCallResponse{}
 	if err := json.Unmarshal(out.Data, &output); err != nil {
-		// TODO: Handle error
+		return nil, nil, sdkerrors.Wrapf(ErrUnableToUnmarshalPayload, fmt.Sprintf("underlying error: %s", err.Error()))
 	}
 	return output.NewClientState, output.NewConsensusState, nil
 }
@@ -86,15 +82,15 @@ func (c *ClientState) CheckMisbehaviourAndUpdateState(context sdk.Context, marsh
 
 	encodedData, err := json.Marshal(payload)
 	if err != nil {
-		// TODO: Handle error
+		return nil, sdkerrors.Wrapf(ErrUnableToMarshalPayload, fmt.Sprintf("underlying error: %s", err.Error()))
 	}
 	out, err := callContract(c.CodeId, context, store, encodedData)
 	if err != nil {
-		// TODO: Handle error
+		return nil, sdkerrors.Wrapf(ErrUnableToCall, fmt.Sprintf("underlying error: %s", err.Error()))
 	}
 	output := clientStateCallResponse{}
 	if err := json.Unmarshal(out.Data, &output); err != nil {
-		// TODO: Handle error
+		return nil, sdkerrors.Wrapf(ErrUnableToUnmarshalPayload, fmt.Sprintf("underlying error: %s", err.Error()))
 	}
 
 	return output.NewClientState, nil
@@ -110,15 +106,15 @@ func (c *ClientState) CheckProposedHeaderAndUpdateState(context sdk.Context, mar
 
 	encodedData, err := json.Marshal(payload)
 	if err != nil {
-		// TODO: Handle error
+		return nil, nil, sdkerrors.Wrapf(ErrUnableToMarshalPayload, fmt.Sprintf("underlying error: %s", err.Error()))
 	}
 	out, err := callContract(c.CodeId, context, store, encodedData)
 	if err != nil {
-		// TODO: Handle error
+		return nil, nil, sdkerrors.Wrapf(ErrUnableToCall, fmt.Sprintf("underlying error: %s", err.Error()))
 	}
 	output := clientStateCallResponse{}
 	if err := json.Unmarshal(out.Data, &output); err != nil {
-		// TODO: Handle error
+		return nil, nil, sdkerrors.Wrapf(ErrUnableToUnmarshalPayload, fmt.Sprintf("underlying error: %s", err.Error()))
 	}
 	return output.NewClientState, output.NewConsensusState, nil
 }
@@ -136,15 +132,15 @@ func (c *ClientState) VerifyUpgradeAndUpdateState(ctx sdk.Context, cdc codec.Bin
 
 	encodedData, err := json.Marshal(payload)
 	if err != nil {
-		// TODO: Handle error
+		return nil, nil, sdkerrors.Wrapf(ErrUnableToMarshalPayload, fmt.Sprintf("underlying error: %s", err.Error()))
 	}
 	out, err := callContract(c.CodeId, ctx, store, encodedData)
 	if err != nil {
-		// TODO: Handle error
+		return nil, nil, sdkerrors.Wrapf(ErrUnableToCall, fmt.Sprintf("underlying error: %s", err.Error()))
 	}
 	output := clientStateCallResponse{}
 	if err := json.Unmarshal(out.Data, &output); err != nil {
-		// TODO: Handle error
+		return nil, nil, sdkerrors.Wrapf(ErrUnableToUnmarshalPayload, fmt.Sprintf("underlying error: %s", err.Error()))
 	}
 	return output.NewClientState, output.NewConsensusState, nil
 }
@@ -272,16 +268,16 @@ func (c *ClientState) VerifyClientState(store sdk.KVStore, cdc codec.BinaryMarsh
 
 	encodedData, err := json.Marshal(payload)
 	if err != nil {
-		// TODO: Handle error
+		return sdkerrors.Wrapf(ErrUnableToMarshalPayload, fmt.Sprintf("underlying error: %s", err.Error()))
 	}
 	response, err := queryContractWithStore(c.CodeId, store, encodedData)
 	if err != nil {
-		// TODO: Handle error
+		return sdkerrors.Wrapf(ErrUnableToQuery, fmt.Sprintf("underlying error: %s", err.Error()))
 	}
 
 	output := queryResponse{}
 	if err := json.Unmarshal(response, &output); err != nil {
-		// TODO: Handle error
+		return sdkerrors.Wrapf(ErrUnableToUnmarshalPayload, fmt.Sprintf("underlying error: %s", err.Error()))
 	}
 
 	if output.Result.IsValid {
@@ -307,16 +303,16 @@ func (c *ClientState) VerifyClientConsensusState(store sdk.KVStore, cdc codec.Bi
 
 	encodedData, err := json.Marshal(payload)
 	if err != nil {
-		// TODO: Handle error
+		return sdkerrors.Wrapf(ErrUnableToMarshalPayload, fmt.Sprintf("underlying error: %s", err.Error()))
 	}
 	response, err := queryContractWithStore(c.CodeId, store, encodedData)
 	if err != nil {
-		// TODO: Handle error
+		return sdkerrors.Wrapf(ErrUnableToQuery, fmt.Sprintf("underlying error: %s", err.Error()))
 	}
 
 	output := queryResponse{}
 	if err := json.Unmarshal(response, &output); err != nil {
-		// TODO: Handle error
+		return sdkerrors.Wrapf(ErrUnableToUnmarshalPayload, fmt.Sprintf("underlying error: %s", err.Error()))
 	}
 
 	if output.Result.IsValid {
@@ -340,16 +336,16 @@ func (c *ClientState) VerifyConnectionState(store sdk.KVStore, cdc codec.BinaryM
 
 	encodedData, err := json.Marshal(payload)
 	if err != nil {
-		// TODO: Handle error
+		return sdkerrors.Wrapf(ErrUnableToMarshalPayload, fmt.Sprintf("underlying error: %s", err.Error()))
 	}
 	response, err := queryContractWithStore(c.CodeId, store, encodedData)
 	if err != nil {
-		// TODO: Handle error
+		return sdkerrors.Wrapf(ErrUnableToQuery, fmt.Sprintf("underlying error: %s", err.Error()))
 	}
 
 	output := queryResponse{}
 	if err := json.Unmarshal(response, &output); err != nil {
-		// TODO: Handle error
+		return sdkerrors.Wrapf(ErrUnableToUnmarshalPayload, fmt.Sprintf("underlying error: %s", err.Error()))
 	}
 
 	if output.Result.IsValid {
@@ -374,16 +370,16 @@ func (c *ClientState) VerifyChannelState(store sdk.KVStore, cdc codec.BinaryMars
 
 	encodedData, err := json.Marshal(payload)
 	if err != nil {
-		// TODO: Handle error
+		return sdkerrors.Wrapf(ErrUnableToMarshalPayload, fmt.Sprintf("underlying error: %s", err.Error()))
 	}
 	response, err := queryContractWithStore(c.CodeId, store, encodedData)
 	if err != nil {
-		// TODO: Handle error
+		return sdkerrors.Wrapf(ErrUnableToQuery, fmt.Sprintf("underlying error: %s", err.Error()))
 	}
 
 	output := queryResponse{}
 	if err := json.Unmarshal(response, &output); err != nil {
-		// TODO: Handle error
+		return sdkerrors.Wrapf(ErrUnableToUnmarshalPayload, fmt.Sprintf("underlying error: %s", err.Error()))
 	}
 
 	if output.Result.IsValid {
@@ -411,16 +407,16 @@ func (c *ClientState) VerifyPacketCommitment(store sdk.KVStore, cdc codec.Binary
 
 	encodedData, err := json.Marshal(payload)
 	if err != nil {
-		// TODO: Handle error
+		return sdkerrors.Wrapf(ErrUnableToMarshalPayload, fmt.Sprintf("underlying error: %s", err.Error()))
 	}
 	response, err := queryContractWithStore(c.CodeId, store, encodedData)
 	if err != nil {
-		// TODO: Handle error
+		return sdkerrors.Wrapf(ErrUnableToQuery, fmt.Sprintf("underlying error: %s", err.Error()))
 	}
 
 	output := queryResponse{}
 	if err := json.Unmarshal(response, &output); err != nil {
-		// TODO: Handle error
+		return sdkerrors.Wrapf(ErrUnableToUnmarshalPayload, fmt.Sprintf("underlying error: %s", err.Error()))
 	}
 
 	if output.Result.IsValid {
@@ -449,16 +445,16 @@ func (c *ClientState) VerifyPacketAcknowledgement(store sdk.KVStore, cdc codec.B
 
 	encodedData, err := json.Marshal(payload)
 	if err != nil {
-		// TODO: Handle error
+		return sdkerrors.Wrapf(ErrUnableToMarshalPayload, fmt.Sprintf("underlying error: %s", err.Error()))
 	}
 	response, err := queryContractWithStore(c.CodeId, store, encodedData)
 	if err != nil {
-		// TODO: Handle error
+		return sdkerrors.Wrapf(ErrUnableToQuery, fmt.Sprintf("underlying error: %s", err.Error()))
 	}
 
 	output := queryResponse{}
 	if err := json.Unmarshal(response, &output); err != nil {
-		// TODO: Handle error
+		return sdkerrors.Wrapf(ErrUnableToUnmarshalPayload, fmt.Sprintf("underlying error: %s", err.Error()))
 	}
 
 	if output.Result.IsValid {
@@ -485,16 +481,16 @@ func (c *ClientState) VerifyPacketReceiptAbsence(store sdk.KVStore, cdc codec.Bi
 
 	encodedData, err := json.Marshal(payload)
 	if err != nil {
-		// TODO: Handle error
+		return sdkerrors.Wrapf(ErrUnableToMarshalPayload, fmt.Sprintf("underlying error: %s", err.Error()))
 	}
 	response, err := queryContractWithStore(c.CodeId, store, encodedData)
 	if err != nil {
-		// TODO: Handle error
+		return sdkerrors.Wrapf(ErrUnableToQuery, fmt.Sprintf("underlying error: %s", err.Error()))
 	}
 
 	output := queryResponse{}
 	if err := json.Unmarshal(response, &output); err != nil {
-		// TODO: Handle error
+		return sdkerrors.Wrapf(ErrUnableToUnmarshalPayload, fmt.Sprintf("underlying error: %s", err.Error()))
 	}
 
 	if output.Result.IsValid {
@@ -521,16 +517,16 @@ func (c *ClientState) VerifyNextSequenceRecv(store sdk.KVStore, cdc codec.Binary
 
 	encodedData, err := json.Marshal(payload)
 	if err != nil {
-		// TODO: Handle error
+		return sdkerrors.Wrapf(ErrUnableToMarshalPayload, fmt.Sprintf("underlying error: %s", err.Error()))
 	}
 	response, err := queryContractWithStore(c.CodeId, store, encodedData)
 	if err != nil {
-		// TODO: Handle error
+		return sdkerrors.Wrapf(ErrUnableToQuery, fmt.Sprintf("underlying error: %s", err.Error()))
 	}
 
 	output := queryResponse{}
 	if err := json.Unmarshal(response, &output); err != nil {
-		// TODO: Handle error
+		return sdkerrors.Wrapf(ErrUnableToUnmarshalPayload, fmt.Sprintf("underlying error: %s", err.Error()))
 	}
 
 	if output.Result.IsValid {
