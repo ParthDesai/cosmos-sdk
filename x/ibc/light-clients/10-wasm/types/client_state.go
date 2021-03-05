@@ -24,15 +24,16 @@ func (c *ClientState) Initialize(context sdk.Context, marshaler codec.BinaryMars
 	inner["self"] = c
 	inner["consensus_state"] = state
 
-	_, err := initContract(c.CodeId, context, store, []byte{})
-	if err != nil {
-		return sdkerrors.Wrapf(ErrUnableToInit, fmt.Sprintf("underlying error: %s", err.Error()))
-	}
-
 	encodedData, err := json.Marshal(payload)
 	if err != nil {
 		return sdkerrors.Wrapf(ErrUnableToMarshalPayload, fmt.Sprintf("underlying error: %s", err.Error()))
 	}
+
+	_, err = initContract(c.CodeId, context, store, []byte{})
+	if err != nil {
+		return sdkerrors.Wrapf(ErrUnableToInit, fmt.Sprintf("underlying error: %s", err.Error()))
+	}
+
 	out, err := callContract(c.CodeId, context, store, encodedData)
 	if err != nil {
 		return sdkerrors.Wrapf(ErrUnableToCall, fmt.Sprintf("underlying error: %s", err.Error()))
