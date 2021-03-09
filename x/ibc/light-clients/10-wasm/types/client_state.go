@@ -21,7 +21,7 @@ func (c *ClientState) Initialize(context sdk.Context, marshaler codec.BinaryMars
 	payload := make(map[string]map[string]interface{})
 	payload[InitializeState] = make(map[string]interface{})
 	inner := payload[InitializeState]
-	inner["self"] = c
+	inner["me"] = c
 	inner["consensus_state"] = state
 
 	encodedData, err := json.Marshal(payload)
@@ -46,7 +46,7 @@ func (c *ClientState) Initialize(context sdk.Context, marshaler codec.BinaryMars
 		return fmt.Errorf("%s error ocurred while initializing client", output.Result.ErrorMsg)
 	}
 	// We might have modified client state, so should store updated version of it
-	*c = *output.Self
+	*c = *output.Me
 	return nil
 }
 
@@ -55,7 +55,7 @@ func (c *ClientState) CheckHeaderAndUpdateState(context sdk.Context, marshaler c
 	payload := make(map[string]map[string]interface{})
 	payload[CheckHeaderAndUpdateState] = make(map[string]interface{})
 	inner := payload[CheckHeaderAndUpdateState]
-	inner["self"] = c
+	inner["me"] = c
 	inner["header"] = header
 
 	encodedData, err := json.Marshal(payload)
@@ -78,7 +78,7 @@ func (c *ClientState) CheckMisbehaviourAndUpdateState(context sdk.Context, marsh
 	payload := make(map[string]map[string]interface{})
 	payload[CheckMisbehaviourAndUpdateState] = make(map[string]interface{})
 	inner := payload[CheckMisbehaviourAndUpdateState]
-	inner["self"] = c
+	inner["me"] = c
 	inner["misbehaviour"] = misbehaviour
 
 	encodedData, err := json.Marshal(payload)
@@ -102,7 +102,7 @@ func (c *ClientState) CheckProposedHeaderAndUpdateState(context sdk.Context, mar
 	payload := make(map[string]map[string]interface{})
 	payload[CheckProposedHeaderAndUpdateState] = make(map[string]interface{})
 	inner := payload[CheckProposedHeaderAndUpdateState]
-	inner["self"] = c
+	inner["me"] = c
 	inner["header"] = header
 
 	encodedData, err := json.Marshal(payload)
@@ -125,8 +125,8 @@ func (c *ClientState) VerifyUpgradeAndUpdateState(ctx sdk.Context, cdc codec.Bin
 	payload := make(map[string]map[string]interface{})
 	payload[VerifyUpgradeAndUpdateState] = make(map[string]interface{})
 	inner := payload[VerifyUpgradeAndUpdateState]
-	inner["self"] = c
-	inner["new_client"] = newClient
+	inner["me"] = c
+	inner["new_client_state"] = newClient
 	inner["new_consensus_state"] = newConsState
 	inner["client_upgrade_proof"] = proofUpgradeClient
 	inner["consensus_state_upgrade_proof"] = proofUpgradeConsState
@@ -151,7 +151,7 @@ func (c *ClientState) ZeroCustomFields() exported.ClientState {
 	payload := make(map[string]map[string]interface{})
 	payload[ZeroCustomFields] = make(map[string]interface{})
 	inner := payload[ZeroCustomFields]
-	inner["self"] = c
+	inner["me"] = c
 
 	encodedData, err := json.Marshal(payload)
 	if err != nil {
@@ -167,7 +167,7 @@ func (c *ClientState) ZeroCustomFields() exported.ClientState {
 	if err := json.Unmarshal(out.Data, &output); err != nil {
 		// TODO: Handle error
 	}
-	return output.Self
+	return output.Me
 }
 
 
@@ -184,7 +184,7 @@ func (c *ClientState) ExportMetadata(store sdk.KVStore) []exported.GenesisMetada
 	payload := make(map[string]map[string]interface{})
 	payload[ExportMetadataQuery] = make(map[string]interface{})
 	inner := payload[ExportMetadataQuery]
-	inner["self"] = c
+	inner["me"] = c
 
 	encodedData, err := json.Marshal(payload)
 	if err != nil {
@@ -236,7 +236,7 @@ func (c *ClientState) GetProofSpecs() []*ics23.ProofSpec {
 	payload := make(map[string]map[string]interface{})
 	payload[GetProofSpecsQuery] = make(map[string]interface{})
 	inner := payload[GetProofSpecsQuery]
-	inner["self"] = c
+	inner["me"] = c
 
 	encodedData, err := json.Marshal(payload)
 	if err != nil {
@@ -260,7 +260,7 @@ func (c *ClientState) VerifyClientState(store sdk.KVStore, cdc codec.BinaryMarsh
 	payload := make(map[string]map[string]interface{})
 	payload[VerifyClientStateQuery] = make(map[string]interface{})
 	inner := payload[VerifyClientStateQuery]
-	inner["self"] = c
+	inner["me"] = c
 	inner["height"] = height
 	inner["commitment_prefix"] = prefix
 	inner["counterparty_client_identifier"] = counterpartyClientIdentifier
@@ -294,7 +294,7 @@ func (c *ClientState) VerifyClientConsensusState(store sdk.KVStore, cdc codec.Bi
 	payload := make(map[string]map[string]interface{})
 	payload[VerifyClientConsensusStateQuery] = make(map[string]interface{})
 	inner := payload[VerifyClientConsensusStateQuery]
-	inner["self"] = c
+	inner["me"] = c
 	inner["height"] = height
 	inner["consensus_height"] = consensusHeight
 	inner["commitment_prefix"] = prefix
@@ -328,7 +328,7 @@ func (c *ClientState) VerifyConnectionState(store sdk.KVStore, cdc codec.BinaryM
 	payload := make(map[string]map[string]interface{})
 	payload[VerifyConnectionStateQuery] = make(map[string]interface{})
 	inner := payload[VerifyConnectionStateQuery]
-	inner["self"] = c
+	inner["me"] = c
 	inner["height"] = height
 	inner["commitment_prefix"] = prefix
 	inner["proof"] = proof
@@ -361,7 +361,7 @@ func (c *ClientState) VerifyChannelState(store sdk.KVStore, cdc codec.BinaryMars
 	payload := make(map[string]map[string]interface{})
 	payload[VerifyChannelStateQuery] = make(map[string]interface{})
 	inner := payload[VerifyChannelStateQuery]
-	inner["self"] = c
+	inner["me"] = c
 	inner["height"] = height
 	inner["commitment_prefix"] = prefix
 	inner["proof"] = proof
@@ -395,7 +395,7 @@ func (c *ClientState) VerifyPacketCommitment(store sdk.KVStore, cdc codec.Binary
 	payload := make(map[string]map[string]interface{})
 	payload[VerifyPacketCommitmentQuery] = make(map[string]interface{})
 	inner := payload[VerifyPacketCommitmentQuery]
-	inner["self"] = c
+	inner["me"] = c
 	inner["height"] = height
 	inner["commitment_prefix"] = prefix
 	inner["proof"] = proof
@@ -433,7 +433,7 @@ func (c *ClientState) VerifyPacketAcknowledgement(store sdk.KVStore, cdc codec.B
 	payload := make(map[string]map[string]interface{})
 	payload[VerifyPacketAcknowledgementQuery] = make(map[string]interface{})
 	inner := payload[VerifyPacketAcknowledgementQuery]
-	inner["self"] = c
+	inner["me"] = c
 	inner["height"] = height
 	inner["commitment_prefix"] = prefix
 	inner["proof"] = proof
@@ -470,7 +470,7 @@ func (c *ClientState) VerifyPacketReceiptAbsence(store sdk.KVStore, cdc codec.Bi
 	payload := make(map[string]map[string]interface{})
 	payload[VerifyPacketReceiptAbsenceQuery] = make(map[string]interface{})
 	inner := payload[VerifyPacketReceiptAbsenceQuery]
-	inner["self"] = c
+	inner["me"] = c
 	inner["height"] = height
 	inner["commitment_prefix"] = prefix
 	inner["proof"] = proof
@@ -506,7 +506,7 @@ func (c *ClientState) VerifyNextSequenceRecv(store sdk.KVStore, cdc codec.Binary
 	payload := make(map[string]map[string]interface{})
 	payload[VerifyNextSequenceRecvQuery] = make(map[string]interface{})
 	inner := payload[VerifyNextSequenceRecvQuery]
-	inner["self"] = c
+	inner["me"] = c
 	inner["height"] = height
 	inner["commitment_prefix"] = prefix
 	inner["proof"] = proof

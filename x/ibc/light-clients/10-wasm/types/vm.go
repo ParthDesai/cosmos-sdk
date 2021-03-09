@@ -33,10 +33,10 @@ type contractResult struct {
 }
 
 type clientStateCallResponse struct {
-	Self              *ClientState    `json:"self,omitempty"`
-	NewConsensusState *ConsensusState `json:"consensus_state,omitempty"`
-	NewClientState    *ClientState    `json:"client_state,omitempty"`
-	Result contractResult `json:"result,omitempty"`
+	Me                *ClientState    `json:"me,omitempty"`
+	NewConsensusState *ConsensusState `json:"new_consensus_state,omitempty"`
+	NewClientState    *ClientState    `json:"new_client_state,omitempty"`
+	Result            contractResult  `json:"result,omitempty"`
 }
 
 func initContract(codeId []byte, ctx sdk.Context, store sdk.KVStore, msg []byte) (*types.InitResponse, error) {
