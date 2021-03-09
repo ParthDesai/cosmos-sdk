@@ -20,9 +20,5 @@ func (m *Header) ValidateBasic() error {
 		return fmt.Errorf("data cannot be empty")
 	}
 
-	if m.CodeId == nil || len(m.CodeId) == 0 {
-		return fmt.Errorf("codeid cannot be empty")
-	}
-
 	return nil
 }

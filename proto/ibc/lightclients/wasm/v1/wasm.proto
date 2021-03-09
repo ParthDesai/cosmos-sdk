@@ -37,10 +37,9 @@ message ConsensusState {
 message Header {
   option (gogoproto.goproto_getters) = false;
 
-  bytes                     data    = 1;
-  bytes                     code_id = 2;
-  ibc.core.client.v1.Height height  = 3;
-  string                    type    = 4;
+  bytes                     data   = 1;
+  ibc.core.client.v1.Height height = 2;
+  string                    type   = 3;
 }
 
 // WASM light client Misbehaviour

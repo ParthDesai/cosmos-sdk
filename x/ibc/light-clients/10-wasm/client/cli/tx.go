@@ -119,14 +119,14 @@ func NewUpdateClientCmd() *cobra.Command {
 
 func NewSubmitMisbehaviourCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "misbehaviour [client-Id] [codeId in hex] [path/to/header1.json] [path/to/header2.json]",
+		Use:   "misbehaviour [client-Id] [path/to/misbehaviour.json]",
 		Short: "submit a client misbehaviour",
 		Long:  "submit a client misbehaviour to invalidate to invalidate previous state roots and prevent future updates",
 		Example: fmt.Sprintf(
-			"$ %s tx ibc %s misbehaviour [client-Id] [path/to/header1.json] [path/to/header2.json] --from node0 --home ../node0/<app>cli --chain-id $CID",
+			"$ %s tx ibc %s misbehaviour [client-Id] [path/to/misbehaviour.json] --from node0 --home ../node0/<app>cli --chain-id $CID",
 			version.AppName, types.SubModuleName,
 		),
-		Args: cobra.ExactArgs(3),
+		Args: cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
@@ -134,35 +134,16 @@ func NewSubmitMisbehaviourCmd() *cobra.Command {
 			}
 			clientID := args[0]
 
-			header1Bytes, err := ioutil.ReadFile(args[2])
+			misbehaviourBytes, err := ioutil.ReadFile(args[2])
 			if err != nil {
 				return errors.Wrap(err, "error reading header1 from file")
 			}
-			header1 := types.Header{}
-			if err := json.Unmarshal(header1Bytes, &header1); err != nil {
-				return errors.Wrap(err, "error unmarshalling header1")
-			}
 
-			header2Bytes, err := ioutil.ReadFile(args[3])
-			if err != nil {
-				return errors.Wrap(err, "error reading header2 from file")
+			misbehaviour := types.Misbehaviour{}
+			if err := json.Unmarshal(misbehaviourBytes, &misbehaviour); err != nil {
+				return errors.Wrap(err, "error unmarshalling misbehaviour")
 			}
-			header2 := types.Header{}
-			if err := json.Unmarshal(header2Bytes, &header2); err != nil {
-				return errors.Wrap(err, "error unmarshalling header2")
-			}
-
-			if bytes.Compare(header1.CodeId, header2.CodeId) != 0 {
-				return fmt.Errorf("CodeId mismatch between two headers")
-			}
-
-
-			misbehaviour := types.Misbehaviour{
-				CodeId:     header1.CodeId,
-				ClientId:   clientID,
-				Header1:    &header1,
-				Header2:    &header2,
-			}
+			misbehaviour.ClientId = clientID
 
 			msg, err := clienttypes.NewMsgSubmitMisbehaviour(misbehaviour.ClientId, &misbehaviour, clientCtx.GetFromAddress())
 			if err != nil {
