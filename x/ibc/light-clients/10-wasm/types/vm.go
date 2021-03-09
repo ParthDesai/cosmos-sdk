@@ -40,7 +40,7 @@ type clientStateCallResponse struct {
 }
 
 func initContract(codeId []byte, ctx sdk.Context, store sdk.KVStore, msg []byte) (*types.InitResponse, error) {
-	gasMeter := ctx.BlockGasMeter()
+	gasMeter := ctx.GasMeter()
 	chainID := ctx.BlockHeader().ChainID
 	height := ctx.BlockHeader().Height
 	// safety checks before casting below
@@ -77,7 +77,7 @@ func initContract(codeId []byte, ctx sdk.Context, store sdk.KVStore, msg []byte)
 }
 
 func callContract(codeId []byte, ctx sdk.Context, store sdk.KVStore, msg []byte) (*types.HandleResponse, error) {
-	gasMeter := ctx.BlockGasMeter()
+	gasMeter := ctx.GasMeter()
 	chainID := ctx.BlockHeader().ChainID
 	height := ctx.BlockHeader().Height
 	// safety checks before casting below
