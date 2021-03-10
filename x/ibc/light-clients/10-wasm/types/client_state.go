@@ -43,9 +43,10 @@ func (c *ClientState) Initialize(context sdk.Context, marshaler codec.BinaryMars
 		return sdkerrors.Wrapf(ErrUnableToUnmarshalPayload, fmt.Sprintf("underlying error: %s", err.Error()))
 	}
 	if !output.Result.IsValid {
-		return fmt.Errorf("%s error ocurred while initializing client", output.Result.ErrorMsg)
+		return fmt.Errorf("%s error ocurred while initializing client state", output.Result.ErrorMsg)
 	}
-	// We might have modified client state, so should store updated version of it
+	output.resetImmutables(c)
+
 	*c = *output.Me
 	return nil
 }
@@ -70,6 +71,10 @@ func (c *ClientState) CheckHeaderAndUpdateState(context sdk.Context, marshaler c
 	if err := json.Unmarshal(out.Data, &output); err != nil {
 		return nil, nil, sdkerrors.Wrapf(ErrUnableToUnmarshalPayload, fmt.Sprintf("underlying error: %s", err.Error()))
 	}
+	if !output.Result.IsValid {
+		return nil, nil, fmt.Errorf("%s error ocurred while updating client state", output.Result.ErrorMsg)
+	}
+	output.resetImmutables(c)
 	return output.NewClientState, output.NewConsensusState, nil
 }
 
@@ -93,7 +98,10 @@ func (c *ClientState) CheckMisbehaviourAndUpdateState(context sdk.Context, marsh
 	if err := json.Unmarshal(out.Data, &output); err != nil {
 		return nil, sdkerrors.Wrapf(ErrUnableToUnmarshalPayload, fmt.Sprintf("underlying error: %s", err.Error()))
 	}
-
+	if !output.Result.IsValid {
+		return nil, fmt.Errorf("%s error ocurred while updating client state", output.Result.ErrorMsg)
+	}
+	output.resetImmutables(c)
 	return output.NewClientState, nil
 }
 
@@ -117,6 +125,10 @@ func (c *ClientState) CheckProposedHeaderAndUpdateState(context sdk.Context, mar
 	if err := json.Unmarshal(out.Data, &output); err != nil {
 		return nil, nil, sdkerrors.Wrapf(ErrUnableToUnmarshalPayload, fmt.Sprintf("underlying error: %s", err.Error()))
 	}
+	if !output.Result.IsValid {
+		return nil, nil, fmt.Errorf("%s error ocurred while updating client state", output.Result.ErrorMsg)
+	}
+	output.resetImmutables(c)
 	return output.NewClientState, output.NewConsensusState, nil
 }
 
@@ -143,6 +155,10 @@ func (c *ClientState) VerifyUpgradeAndUpdateState(ctx sdk.Context, cdc codec.Bin
 	if err := json.Unmarshal(out.Data, &output); err != nil {
 		return nil, nil, sdkerrors.Wrapf(ErrUnableToUnmarshalPayload, fmt.Sprintf("underlying error: %s", err.Error()))
 	}
+	if !output.Result.IsValid {
+		return nil, nil, fmt.Errorf("%s error ocurred while updating client state", output.Result.ErrorMsg)
+	}
+	output.resetImmutables(c)
 	return output.NewClientState, output.NewConsensusState, nil
 }
 
@@ -167,6 +183,7 @@ func (c *ClientState) ZeroCustomFields() exported.ClientState {
 	if err := json.Unmarshal(out.Data, &output); err != nil {
 		// TODO: Handle error
 	}
+	output.resetImmutables(c)
 	return output.Me
 }
 
@@ -284,7 +301,7 @@ func (c *ClientState) VerifyClientState(store sdk.KVStore, cdc codec.BinaryMarsh
 	if output.Result.IsValid {
 		return nil
 	} else {
-		return fmt.Errorf("%s error while validating", output.Result.ErrorMsg)
+		return fmt.Errorf("%s error while validating client state", output.Result.ErrorMsg)
 	}
 
 }
@@ -319,7 +336,7 @@ func (c *ClientState) VerifyClientConsensusState(store sdk.KVStore, cdc codec.Bi
 	if output.Result.IsValid {
 		return nil
 	} else {
-		return fmt.Errorf("%s error while validating", output.Result.ErrorMsg)
+		return fmt.Errorf("%s error while verifying consensus state", output.Result.ErrorMsg)
 	}
 }
 
@@ -352,7 +369,7 @@ func (c *ClientState) VerifyConnectionState(store sdk.KVStore, cdc codec.BinaryM
 	if output.Result.IsValid {
 		return nil
 	} else {
-		return fmt.Errorf("%s error while validating", output.Result.ErrorMsg)
+		return fmt.Errorf("%s error while verifying connection state", output.Result.ErrorMsg)
 	}
 }
 
@@ -386,7 +403,7 @@ func (c *ClientState) VerifyChannelState(store sdk.KVStore, cdc codec.BinaryMars
 	if output.Result.IsValid {
 		return nil
 	} else {
-		return fmt.Errorf("%s error while validating", output.Result.ErrorMsg)
+		return fmt.Errorf("%s error while verifying channel state", output.Result.ErrorMsg)
 	}
 }
 
@@ -423,7 +440,7 @@ func (c *ClientState) VerifyPacketCommitment(store sdk.KVStore, cdc codec.Binary
 	if output.Result.IsValid {
 		return nil
 	} else {
-		return fmt.Errorf("%s error while validating", output.Result.ErrorMsg)
+		return fmt.Errorf("%s error while verifying packet commitment", output.Result.ErrorMsg)
 	}
 
 }
@@ -461,7 +478,7 @@ func (c *ClientState) VerifyPacketAcknowledgement(store sdk.KVStore, cdc codec.B
 	if output.Result.IsValid {
 		return nil
 	} else {
-		return fmt.Errorf("%s error while validating", output.Result.ErrorMsg)
+		return fmt.Errorf("%s error while verifying packet acknowledgement", output.Result.ErrorMsg)
 	}
 }
 
@@ -497,7 +514,7 @@ func (c *ClientState) VerifyPacketReceiptAbsence(store sdk.KVStore, cdc codec.Bi
 	if output.Result.IsValid {
 		return nil
 	} else {
-		return fmt.Errorf("%s error while validating", output.Result.ErrorMsg)
+		return fmt.Errorf("%s error while verifying packet receipt absense", output.Result.ErrorMsg)
 	}
 }
 
@@ -533,6 +550,6 @@ func (c *ClientState) VerifyNextSequenceRecv(store sdk.KVStore, cdc codec.Binary
 	if output.Result.IsValid {
 		return nil
 	} else {
-		return fmt.Errorf("%s error while validating", output.Result.ErrorMsg)
+		return fmt.Errorf("%s error while verify next sequence", output.Result.ErrorMsg)
 	}
 }

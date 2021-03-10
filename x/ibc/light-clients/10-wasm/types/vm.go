@@ -39,6 +39,23 @@ type clientStateCallResponse struct {
 	Result            contractResult  `json:"result,omitempty"`
 }
 
+func (r *clientStateCallResponse) resetImmutables(c *ClientState) {
+	if r.Me != nil {
+		r.Me.CodeId = c.CodeId
+		r.Me.Type = c.Type
+	}
+
+	if r.NewConsensusState != nil {
+		r.NewConsensusState.Type = c.Type
+		r.NewConsensusState.CodeId = c.CodeId
+	}
+
+	if r.NewClientState != nil {
+		r.NewClientState.Type = c.Type
+		r.NewClientState.CodeId = c.CodeId
+	}
+}
+
 func initContract(codeId []byte, ctx sdk.Context, store sdk.KVStore, msg []byte) (*types.InitResponse, error) {
 	gasMeter := ctx.GasMeter()
 	chainID := ctx.BlockHeader().ChainID
